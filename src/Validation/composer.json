@@ -1,0 +1,27 @@
+{
+    "name": "behance/nbd.php-validation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bryan Latten",
+            "email": "latten@adobe.com"
+        }
+    ],
+    "description": "NBD.php Validation Component",
+    "autoload": {
+        "psr-4": {
+            "NBD\\Validation\\": ""
+        }
+    },
+    "target-dir": "Validation",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
