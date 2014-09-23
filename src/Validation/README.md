@@ -1,5 +1,5 @@
-NBD.php - Validation Component
-==============================
+Validation Component
+====================
 
 Provides easy to use rules for checking various data types. Rules can be used
 in isolation, or chained together for a form-like validation interface.
