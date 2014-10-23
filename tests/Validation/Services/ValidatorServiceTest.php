@@ -206,7 +206,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
   /**
    * @test
    */
-  public function getValidDataFalseTest() {
+  public function getValidDataFalse() {
 
     $validator = new ValidatorService();
 
@@ -215,13 +215,13 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $this->assertFalse( $validator->run() );
     $this->assertEquals( [], $validator->getValidatedData() );
 
-  } // getValidDataFalseTest
+  } // getValidDataFalse
 
 
   /**
    * @test
    */
-  public function getValidatedFieldsTest() {
+  public function getValidatedFields() {
 
     $data = [ 'new_password' => 'something' ];
 
@@ -232,7 +232,25 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $this->assertContains( 'new_password', $validator->getValidatedFields() );
 
-  } // getValidatedFieldsTest
+  } // getValidatedFields
+
+
+  /**
+   * @test
+   * @expectedException NBD\Validation\Exceptions\Validator\NotRunException
+   */
+  public function getValidatedFieldsNotRun() {
+
+    $key  = 'password';
+    $data = [ $key => 'something' ];
+
+    $validator = new ValidatorService( $data );
+
+    $validator->setRule( $key, 'New Password', 'required|minLength[1]|maxLength[10]' );
+
+    $validator->getValidatedField( $key );
+
+  } // getValidatedFieldsNotRun
 
 
   /**
@@ -773,7 +791,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $key1  = 'new_password';
     $key2  = 'confirm_password';
-    $value = 'heresthealphapassword';
+    $value = 'heresthealphapassword'; // Ensure both fields are populated with the same value
     $data  = [
         $key1  => $value,
         $key2  => $value
@@ -810,34 +828,6 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $this->assertFalse( $validator->run() );
 
   } // runNonMatches
-
-
-  /**
-   * @test
-   */
-  public function runMatchingFailedInput() {
-
-    $key1  = 'new_password';
-    $key2  = 'confirm_password';
-
-    // Ensures data for both keys match
-    $value = 'securepassword';
-    $data  = [
-        $key1 => $value,
-        $key2 => $value
-    ];
-
-    $validator = new ValidatorService( $data );
-
-    $validator->setRule( $key1, 'New Password',     'required|integer' ) // Will fail validation
-              ->setRule( $key2, 'Confirm Password', 'required|alpha|matches[' . $key1 . ']' );
-
-    $this->assertFalse( $validator->run() );
-
-    $this->assertTrue( $validator->isFieldFailed( $key1 ) );
-    $this->assertTrue( $validator->isFieldFailed( $key2 ) );
-
-  } // runMatchingFailedInput
 
 
   /**

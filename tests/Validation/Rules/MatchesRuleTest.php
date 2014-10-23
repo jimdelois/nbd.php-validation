@@ -1,4 +1,6 @@
 <?php
+use NBD\Validation\Services\ValidatorService;
+
 /**
  * @group validation
  */
@@ -10,14 +12,20 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
    * @test
    * @dataProvider testDataProvider
    */
-  public function isValid( $field1, $field2, $expected ) {
+  public function isValid( $value1, $value2, $expected ) {
 
     $name = $this->_class;
     $rule = new $name();
+    $key2 = 'def';
 
+    $validator = new ValidatorService( [ $key2 => $value2 ] );
     $closure = $rule->getClosure();
+    $context = [
+        'validator'  => $validator,
+        'parameters' => [ $key2 ]
+    ];
 
-    $this->assertEquals( $expected, $closure( $field1, $field2 ) );
+    $this->assertEquals( $expected, $closure( $value1, $context ) );
 
   } // isValid
 

@@ -76,7 +76,6 @@ class NBD_Validation_Providers_RulesProviderTest extends PHPUnit_Framework_TestC
 
     } );
 
-
     $rules->setCallbackRule( $rule_key, $callback );
 
     $this->assertSame( $callback, $rules->getRule( $rule_key )->getClosure() );
@@ -85,5 +84,50 @@ class NBD_Validation_Providers_RulesProviderTest extends PHPUnit_Framework_TestC
 
   } // getSetCallbackRule
 
+
+  /**
+   * @test
+   */
+  public function getSetRuleNamespaces() {
+
+    $namespaces = $this->_rules->getRuleNamespaces();
+
+    $this->assertCount( 1, $namespaces );
+
+    $existing_namespace = $namespaces[0]; // Grab the value of the only known namespace
+    $new_namespace      = 'Abc\\Def\\Ghi\\';
+
+    $this->_rules->addRuleNamespace( $new_namespace );
+
+    $namespaces = $this->_rules->getRuleNamespaces();
+
+    $this->assertCount( 2, $namespaces );
+
+    // Ensure new namespace is added AHEAD of existing namespace
+    $this->assertEquals( $new_namespace,      $namespaces[0] );
+    $this->assertEquals( $existing_namespace, $namespaces[1] );
+
+  } // getSetRuleNamespaces
+
+
+  /**
+   * @test
+   */
+  public function normalizeRuleNamespace() {
+
+    $normalized     = 'Normalized\\Namespace\\With\\Trailing\\';
+    $non_normalized = 'Does\\Not\\Have\\Trailing';
+
+    $this->_rules->addRuleNamespace( $normalized );
+    $this->_rules->addRuleNamespace( $non_normalized );
+
+    $namespaces = $this->_rules->getRuleNamespaces();
+
+    $this->assertGreaterThan( 2, count( $namespaces ) ); // Two additional plus 1 existing
+
+    $this->assertEquals( $non_normalized . '\\', $namespaces[0] ); // LIFO ensures this is first, normalized
+    $this->assertEquals( $normalized,            $namespaces[1] ); // Already normalized, must match
+
+  } // normalizeRuleNamespace
 
 } // NBD_Validation_Providers_RulesProviderTest

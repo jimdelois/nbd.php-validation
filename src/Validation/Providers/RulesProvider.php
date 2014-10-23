@@ -15,7 +15,14 @@ use NBD\Validation\Exceptions\Rules\NoSuchRuleException;
  */
 class RulesProvider implements RulesProviderInterface {
 
-  // const PREFIX_CALLBACK = '_callback'; // Prepended to callback rules that are locally defined
+  const RULE_NAME_SUFFIX = 'Rule';
+
+  /**
+   * @var array  different namespaces to use for locating rules
+   */
+  protected $_rule_namespaces = [
+      'NBD\\Validation\\Rules\\'
+  ];
 
   /**
    * @var array storage for user-defined callback validators
@@ -84,6 +91,35 @@ class RulesProvider implements RulesProviderInterface {
 
 
   /**
+   * IMPORTANT: namespace list and rule definition is LIFO (last in first out)
+   * Will add $namespace to list of currently defined namespaces, taking priority over previously defined ones
+   *
+   * @param string $namespace  forms the base for classnames that conform to {namespace}\{rule_name}Rule.php
+   *                           and implement NBD\Validation\Interfaces\RuleInterface
+   */
+  public function addRuleNamespace( $namespace ) {
+
+    $separator = '\\';
+
+    // Normalize rule namespace to always end with the namespace separator
+    $namespace = rtrim( $namespace, $separator ) . $separator;
+
+    array_unshift( $this->_rule_namespaces, $namespace );
+
+  } // addRuleNamespace
+
+
+  /**
+   * @return array  all currently defined namespaces
+   */
+  public function getRuleNamespaces() {
+
+    return $this->_rule_namespaces;
+
+  } // getRuleNamespaces
+
+
+  /**
    * @param string $pattern
    *
    * @return RegexTemplateRule
@@ -124,13 +160,23 @@ class RulesProvider implements RulesProviderInterface {
    */
   protected function _buildStandardRule( $name ) {
 
-    $class_name = "NBD\\Validation\\Rules\\" . ucfirst( $name ) . 'Rule';
+    $namespaces = $this->getRuleNamespaces();
 
-    if ( !class_exists( $class_name, true ) ) {
-      throw new NoSuchRuleException( "Rule '{$name}' is not a validator rule" );
-    }
+    foreach ( $namespaces as $namespace ) {
 
-    return new $class_name();
+      $class_name = $namespace . ucfirst( $name ) . self::RULE_NAME_SUFFIX;
+
+      if ( !class_exists( $class_name, true ) ) {
+        continue;
+      }
+
+      // Class is located, return right away
+      return new $class_name();
+
+    } // foreach namespaces
+
+    // After going through all possible namespaces, nothing was found, fail
+    throw new NoSuchRuleException( "Rule '{$name}' is not a validator rule" );
 
   } // _buildStandardRule
 

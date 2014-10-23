@@ -15,17 +15,17 @@ use NBD\Validation\Exceptions\Validator\CallbackResultException;
 class ValidatorService implements ValidatorServiceInterface {
 
   // Define special-case rules that need to be dealt with differently than standard ones
-  const RULE_REQUIRED     = 'required';
-  const RULE_MATCHES      = 'matches';
-  const RULE_FILTER       = 'filter'; // Will modify raw input as it moves through this validation step
+  const RULE_REQUIRED      = 'required';
+  const RULE_MATCHES       = 'matches';
+  const RULE_FILTER        = 'filter'; // Will modify raw input as it moves through this validation step
 
-  protected $_rules       = [],    // Stores all keys, names, and associated rules to be applied
-            $_cage_data   = [],    // Pre-tested, unvalidated data
-            $_valid_data  = [],    // Post-tested, approved data
-            $_field_names = [],    // list of rules to their readable names
-            $_failures    = [],
-            $_errors      = [],    // Key => Message for an errors encountered
-            $_delimiter   = ', ';
+  protected $_rules        = [],    // Stores all keys, names, and associated rules to be applied
+            $_cage_data    = [],    // Pre-tested, unvalidated data
+            $_valid_data   = [],    // Post-tested, approved data
+            $_field_names  = [],    // list of rules to their readable names
+            $_errors       = [],    // Key => Message for an errors encountered
+            $_run_complete = false,
+            $_delimiter    = ', ';
 
   protected $_rules_provider;
 
@@ -88,13 +88,22 @@ class ValidatorService implements ValidatorServiceInterface {
    *
    * @param string $key        index where to expect data to validate
    * @param string $fieldname  readable name for this data field
-   * @param string $rules      pipe-delimited series of validation rules to be applied in order
+   * @param string $rules      pipe-delimited or array series of validation rules to be applied in order
    *
    * @return $this   providing a fluent interface
    */
   public function setRule( $key, $fieldname, $rules ) {
 
-    $this->_rules[ $key ]  = explode( '|', $rules );
+    $rules = ( is_array( $rules ) )
+             ? $rules
+             : explode( '|', $rules );
+
+    // IMPORTANT: simply having 'required' is not sufficient for a validator ruleset
+    if ( count( $rules ) === 1 && $rules[0] === self::RULE_REQUIRED ) {
+      throw new RuleRequirementException( "A valid ruleset for '{$key}' must more than just 'required'" );
+    }
+
+    $this->_rules[ $key ]       = $rules;
     $this->_field_names[ $key ] = $fieldname;
 
     return $this;
@@ -165,6 +174,18 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
+   * Return all keys marked for validation.
+   *
+   * @return array
+   */
+  public function getFields() {
+
+    return array_keys( $this->_rules );
+
+  } // getFields
+
+
+  /**
    * Retrieves rules for all or a specific field to be validated
    *
    * @throws InvalidRuleException  when $key is supplied, but hasn't been set previously
@@ -184,18 +205,6 @@ class ValidatorService implements ValidatorServiceInterface {
     return $rules[ $key ];
 
   } // getFieldRules
-
-
-  /**
-   * Return all keys marked for validation.
-   *
-   * @return array
-   */
-  public function getFields() {
-
-    return array_keys( $this->_rules );
-
-  } // getFields
 
 
   /**
@@ -235,8 +244,7 @@ class ValidatorService implements ValidatorServiceInterface {
    */
   public function run() {
 
-    $ext_rules = []; // Store extra logic-based functionality after data processing
-    $rule_set  = $this->getAllFieldRules();
+    $rule_set = $this->getAllFieldRules();
 
     if ( empty( $rule_set ) ) {
       throw new NotRunException( "No validation rules to execute" );
@@ -249,13 +257,7 @@ class ValidatorService implements ValidatorServiceInterface {
 
       $field_failed = false; // Flag this true to end validating field
       $required     = in_array( self::RULE_REQUIRED, $rules );
-
-      // Make sure required is not the only rule applied, otherwise throw exception
-      if ( $required && count( $rules ) == 1 ) {
-        throw new RuleRequirementException( "'required' cannot be the only validation rule" );
-      }
-
-      $raw_data = $this->getCageDataValue( $key );
+      $raw_data     = $this->getCageDataValue( $key );
 
       // If required and no data is supplied, fail this field
       if ( $raw_data === null ) {
@@ -286,7 +288,7 @@ class ValidatorService implements ValidatorServiceInterface {
           continue;
         }
 
-        list( $rule_name, $rule_parameters ) = $this->_processRuleIntoFunctionAndArguments( $rule );
+        list( $rule_name, $rule_parameters ) = $this->_processRuleIntoFunctionAndArguments( $rule, $key );
 
         $context = [
             'key'        => $key,
@@ -297,33 +299,22 @@ class ValidatorService implements ValidatorServiceInterface {
 
         $rule_component = $rules_provider->getRule( $rule_name );
 
-        // Switch between the parameterized rule types
-        switch ( $rule_name ) {
+        //==============================================================================
 
-          // TODO: move to a lazy evaluation registration system
-          case self::RULE_MATCHES:
+        // TODO: remove the need to handle filtering separately
+        if ( $rule_name == self::RULE_FILTER ) {
 
-            // This gets evaluated after the remaining validation
-            $ext_rules[] = [
-                'rule'     => $rule_name,
-                'args'     => [ $key, $rule_parameters[0] ],
-                'required' => $required
-            ];
+          // IMPORTANT: send raw_data twice, the 2nd being pass by reference
+          $closure      = $rule_component->getClosure();
+          $field_failed = !$closure( $raw_data, $context, $raw_data );
 
-            break;
+        } // if rule_name = filter
 
-          case self::RULE_FILTER:
+        else {
+          $field_failed = !$rule_component->isValid( $raw_data, $context );
+        }
 
-            // IMPORTANT: send raw_data twice, the 2nd being pass by reference
-            $closure      = $rule_component->getClosure();
-            $field_failed = !$closure( $raw_data, $context, $raw_data );
-            break;
-
-          default:
-            $field_failed = !$rule_component->isValid( $raw_data, $context );
-            break;
-
-        } // switch rule_name
+        //==============================================================================
 
         // Now that validation rule has run, check the results
         if ( $field_failed ) {
@@ -339,28 +330,7 @@ class ValidatorService implements ValidatorServiceInterface {
 
     } // foreach rules_set
 
-    // Now that we have evaluated all the data, perform the additional logic rules on the finished data
-    foreach ( $ext_rules as $params ) {
-
-      switch ( $params['rule'] ) {
-
-        case self::RULE_MATCHES:
-
-          $closure = $rules_provider->getRule( $rule_name )->getClosure();
-
-          $field1  = $this->__get( $params['args'][0] );
-          $field2  = $this->__get( $params['args'][1] );
-
-          // When not matching (or missing), only insert an error for the SECOND of the two matching fields
-          if ( !$closure( $field1, $field2 ) ) {
-            $this->_addError( $params['args'][0], $params['rule'], $params['args'][1] );
-          }
-
-          break;
-
-      } // switch rule
-
-    } // foreach ext_rules
+    $this->_run_complete = true;
 
     return !$this->_hasErrors();
 
@@ -377,13 +347,8 @@ class ValidatorService implements ValidatorServiceInterface {
     $valid = $this->run();
 
     if ( !$valid ) {
-
-      $e = new FailureException( $this->getAllFieldErrors() );
-      $e->setValidator( $this );
-
-      throw $e;
-
-    } // if !valid
+      throw new FailureException( $this->getAllFieldErrors(), 0, null, $this );
+    }
 
     return $valid;
 
@@ -488,18 +453,6 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
-   * After ->run(), retrieve a list of keys that did pass
-   *
-   * @return array
-   */
-  public function getValidatedFields() {
-
-    return array_keys( $this->_valid_data );
-
-  } // getValidatedFields
-
-
-  /**
    * @param RulesProviderInterface $rules
    */
   public function setRulesProvider( RulesProviderInterface $rules_provider ) {
@@ -560,12 +513,28 @@ class ValidatorService implements ValidatorServiceInterface {
       throw new InvalidRuleException( "Call ->setRule() for '{$key}' first" );
     }
 
+    if ( !$this->_isRunComplete() ) {
+      throw new NotRunException( "Validator must be ->run() before retrieving values" );
+    }
+
     // If data exists and isn't invalid, return it, otherwise return an empty string
     return ( isset( $this->_valid_data[ $key ] ) )
            ? $this->_valid_data[ $key ]
            : null;
 
   } // getValidatedField
+
+
+  /**
+   * After ->run(), retrieve a list of keys that did pass
+   *
+   * @return array
+   */
+  public function getValidatedFields() {
+
+    return array_keys( $this->_valid_data );
+
+  } // getValidatedFields
 
 
   /**
@@ -587,12 +556,19 @@ class ValidatorService implements ValidatorServiceInterface {
    */
   public function __set( $key, $value ) {
 
-    $key;   // Ignored value
-    $value; // Ignored value
+    $key;   // Appease PHPMD
+    $value;
 
     throw new \BadMethodCallException( "Magic properties are disabled" );
 
   } // __set
+
+
+  protected function _isRunComplete() {
+
+    return $this->_run_complete;
+
+  } // _isRunComplete
 
 
   /**
@@ -659,29 +635,29 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
-   * @param string $rule_name
+   * @param mixed  $rule
+   * @param string $key   field currently being processed
    *
    * @return array [ 0 => function name, 1 => optional array of parameters ]
    */
-  protected function _processRuleIntoFunctionAndArguments( $rule_name ) {
-
-    $rule_parameters = [];
+  protected function _processRuleIntoFunctionAndArguments( $rule, $key ) {
 
     // When a [ appears anywhere, this is an attempt to use a rule as parameterized function
-    $param_position  = strpos( $rule_name, '[' );
+    $param_position  = strpos( $rule, '[' );
+    $rule_parameters = [];
 
     if ( $param_position !== false )  {
 
       // When there's no complimenting bracket, this is a problem
-      if ( strpos( $rule_name, ']' ) !== ( strlen( $rule_name ) - 1 ) ) {
-        throw new RuleRequirementException( "Rule parameters must encapsulated by []" );
+      if ( strpos( $rule, ']' ) !== ( strlen( $rule ) - 1 ) ) {
+        throw new RuleRequirementException( "Field '{$key}' needs rule parameters encapsulated by []" );
       }
 
       // Remove the brackets from the request, leaving a (hopefully) comma-separated list of parameters
-      $rule_arguments  = substr( $rule_name, ( $param_position + 1 ), strlen( $rule_name ) );
+      $rule_arguments  = substr( $rule, ( $param_position + 1 ), strlen( $rule ) );
 
       // Remove parameters from the rule name
-      $rule_name       = substr( $rule_name, 0, $param_position );
+      $rule            = substr( $rule, 0, $param_position );
       $rule_arguments  = substr( $rule_arguments, 0, ( strlen( $rule_arguments ) - 1 ) );
 
       // Create an array by dividing arguments along the comma
@@ -689,8 +665,9 @@ class ValidatorService implements ValidatorServiceInterface {
 
     } // if param_position
 
+
     // Standardize rules with lowercase first character
-    return [ lcfirst( $rule_name ), $rule_parameters ];
+    return [ lcfirst( $rule ), $rule_parameters ];
 
   } // _processRuleIntoFunctionAndArguments
 

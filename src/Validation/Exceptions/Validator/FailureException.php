@@ -10,13 +10,18 @@ class FailureException extends Exception {
   protected $_validator;
 
   /**
-   * @param ValidatorServiceInterface $validator  failed service
+   * {@inheritDoc}
    */
-  public function setValidator( ValidatorServiceInterface $validator ) {
+  public function __construct( $message = '', $code = 0, \Exception $previous = null, ValidatorServiceInterface $validator = null ) {
 
-    $this->_validator = $validator;
+    parent::__construct( $message, $code, $previous );
 
-  } // setValidator
+    if ( $validator ) {
+      $this->_setValidator( $validator );
+    }
+
+  } // __construct
+
 
   /**
    * @return ValidatorServiceInterface  when available
@@ -26,5 +31,15 @@ class FailureException extends Exception {
     return $this->_validator;
 
   } // getValidator
+
+
+  /**
+   * @param ValidatorServiceInterface $validator  failed service
+   */
+  private function _setValidator( ValidatorServiceInterface $validator ) {
+
+    $this->_validator = $validator;
+
+  } // _setValidator
 
 } // FailureException
