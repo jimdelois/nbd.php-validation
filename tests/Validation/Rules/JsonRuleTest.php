@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_JsonRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\JsonRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\JsonRule';
 
   /**
    * @test

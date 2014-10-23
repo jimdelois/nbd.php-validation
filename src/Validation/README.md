@@ -11,7 +11,7 @@ Usage
 
 
 ```
-use NBD\Validation\Rules\IntegerRule;
+use Behance\NBD\Validation\Rules\IntegerRule;
 
 $rule  = new IntegerRule();
 
@@ -24,7 +24,7 @@ $valid = $rule->isValid( 'abc' );  // false
 
 
 ```
-use NBD\Validation\Services\ValidatorService;
+use Behance\NBD\Validation\Services\ValidatorService;
 
 $validator = new ValidatorService();
 
@@ -122,7 +122,7 @@ Parameters are defined comma-separated inside brackets after rule:
 #####Add custom named validators quickly and easily:
 
 ```
-use NBD\Validation\Services\ValidatorService;
+use Behance\NBD\Validation\Services\ValidatorService;
 
 $validator = new ValidatorService();
 $rules     = $validator->getRulesProvider();

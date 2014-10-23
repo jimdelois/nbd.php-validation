@@ -1,16 +1,16 @@
 <?php
 
-namespace NBD\Validation\Services;
+namespace Behance\NBD\Validation\Services;
 
-use NBD\Validation\Interfaces\ValidatorServiceInterface;
-use NBD\Validation\Interfaces\RulesProviderInterface;
-use NBD\Validation\Providers\RulesProvider;
-use NBD\Validation\Exceptions\Validator\InvalidRuleException;
-use NBD\Validation\Exceptions\Validator\RuleRequirementException;
-use NBD\Validation\Exceptions\Validator\FailureException;
-use NBD\Validation\Exceptions\Validator\NotRunException;
-use NBD\Validation\Exceptions\Validator\DuplicateRunException;
-use NBD\Validation\Exceptions\Validator\CallbackResultException;
+use Behance\NBD\Validation\Interfaces\ValidatorServiceInterface;
+use Behance\NBD\Validation\Interfaces\RulesProviderInterface;
+use Behance\NBD\Validation\Providers\RulesProvider;
+use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
+use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
+use Behance\NBD\Validation\Exceptions\Validator\FailureException;
+use Behance\NBD\Validation\Exceptions\Validator\NotRunException;
+use Behance\NBD\Validation\Exceptions\Validator\DuplicateRunException;
+use Behance\NBD\Validation\Exceptions\Validator\CallbackResultException;
 
 class ValidatorService implements ValidatorServiceInterface {
 

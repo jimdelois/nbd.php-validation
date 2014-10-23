@@ -1,14 +1,14 @@
 <?php
 
-use NBD\Validation\Providers\RulesProvider;
+use Behance\NBD\Validation\Providers\RulesProvider;
 
 /**
  * @group validation
  */
 class NBD_Validation_Providers_RulesProviderTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class      = 'NBD\Validation\Providers\RulesProvider',
-            $_rule_class = 'NBD\Validation\Abstracts\RuleAbstract',
+  protected $_class      = 'Behance\NBD\Validation\Providers\RulesProvider',
+            $_rule_class = 'Behance\NBD\Validation\Abstracts\RuleAbstract',
             $_rules;
 
   protected function setUp() {
@@ -50,7 +50,7 @@ class NBD_Validation_Providers_RulesProviderTest extends PHPUnit_Framework_TestC
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Rules\NoSuchRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException
    */
   public function getRegexRuleDoesntExist() {
 

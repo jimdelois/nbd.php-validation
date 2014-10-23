@@ -1,8 +1,8 @@
 <?php
 
-namespace NBD\Validation\Interfaces;
+namespace Behance\NBD\Validation\Interfaces;
 
-use NBD\Validation\Interfaces\RuleInterface;
+use Behance\NBD\Validation\Interfaces\RuleInterface;
 
 interface RulesProviderInterface {
 
@@ -11,7 +11,7 @@ interface RulesProviderInterface {
    *
    * @param string $name
    *
-   * @return NBD\Validation\Interfaces\RuleInterface
+   * @return Behance\NBD\Validation\Interfaces\RuleInterface
    */
   public function getRule( $name );
 
@@ -29,7 +29,7 @@ interface RulesProviderInterface {
    * @param string $name     how to reference rule in future
    * @param string $pattern  regex to evaluate for this rule
    *
-   * @return NBD\Validation\Rules\Templates\RegexTemplateRule
+   * @return Behance\NBD\Validation\Rules\Templates\RegexTemplateRule
    */
   public function setRegexRule( $name, $pattern );
 
@@ -40,7 +40,7 @@ interface RulesProviderInterface {
    * @param string  $name     how to identify rule
    * @param Closure $closure  processes validator data
    *
-   * @return NBD\Validation\Rules\Templates\CallbackTemplateRule
+   * @return Behance\NBD\Validation\Rules\Templates\CallbackTemplateRule
    */
   public function setCallbackRule( $name, \Closure $closure );
 

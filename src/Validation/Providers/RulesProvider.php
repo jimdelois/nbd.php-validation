@@ -1,14 +1,14 @@
 <?php
 
-namespace NBD\Validation\Providers;
+namespace Behance\NBD\Validation\Providers;
 
-use NBD\Validation\Interfaces\RulesProviderInterface;
-use NBD\Validation\Interfaces\RuleInterface;
+use Behance\NBD\Validation\Interfaces\RulesProviderInterface;
+use Behance\NBD\Validation\Interfaces\RuleInterface;
 
-use NBD\Validation\Rules\Templates\RegexTemplateRule;
-use NBD\Validation\Rules\Templates\CallbackTemplateRule;
+use Behance\NBD\Validation\Rules\Templates\RegexTemplateRule;
+use Behance\NBD\Validation\Rules\Templates\CallbackTemplateRule;
 
-use NBD\Validation\Exceptions\Rules\NoSuchRuleException;
+use Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException;
 
 /**
  * Stores rules as callbacks that can be accessed by key
@@ -21,7 +21,7 @@ class RulesProvider implements RulesProviderInterface {
    * @var array  different namespaces to use for locating rules
    */
   protected $_rule_namespaces = [
-      'NBD\\Validation\\Rules\\'
+      'Behance\\NBD\\Validation\\Rules\\'
   ];
 
   /**
@@ -95,7 +95,7 @@ class RulesProvider implements RulesProviderInterface {
    * Will add $namespace to list of currently defined namespaces, taking priority over previously defined ones
    *
    * @param string $namespace  forms the base for classnames that conform to {namespace}\{rule_name}Rule.php
-   *                           and implement NBD\Validation\Interfaces\RuleInterface
+   *                           and implement Behance\NBD\Validation\Interfaces\RuleInterface
    */
   public function addRuleNamespace( $namespace ) {
 
@@ -152,11 +152,11 @@ class RulesProvider implements RulesProviderInterface {
   /**
    * Creates an instance of a built-in rule based on $name
    *
-   * @throws NoSuchRuleException
+   * @throws UnknownRuleException
    *
    * @param string $name
    *
-   * @return NBD\Validation\Interfaces\RuleInterface
+   * @return Behance\NBD\Validation\Interfaces\RuleInterface
    */
   protected function _buildStandardRule( $name ) {
 
@@ -176,7 +176,7 @@ class RulesProvider implements RulesProviderInterface {
     } // foreach namespaces
 
     // After going through all possible namespaces, nothing was found, fail
-    throw new NoSuchRuleException( "Rule '{$name}' is not a validator rule" );
+    throw new UnknownRuleException( "Rule '{$name}' is not a validator rule" );
 
   } // _buildStandardRule
 

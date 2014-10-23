@@ -1,12 +1,12 @@
 <?php
-use NBD\Validation\Services\ValidatorService;
+use Behance\NBD\Validation\Services\ValidatorService;
 
 /**
  * @group validation
  */
 class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\MatchesRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\MatchesRule';
 
   /**
    * @test
@@ -28,6 +28,28 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals( $expected, $closure( $value1, $context ) );
 
   } // isValid
+
+
+  /**
+   * @test
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
+   */
+  public function wrongParameterCount() {
+
+    $name = $this->_class;
+    $rule = new $name();
+    $key2 = 'def';
+
+    $validator = new ValidatorService( [ $key2 => 'anything' ] );
+    $closure = $rule->getClosure();
+    $context = [
+        'validator'  => $validator,
+        'parameters' => []
+    ];
+
+    $closure( 'anything_else', $context );
+
+  } // wrongParameterCount
 
 
   /**

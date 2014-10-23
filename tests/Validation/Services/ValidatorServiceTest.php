@@ -1,7 +1,7 @@
 <?php
 
-use NBD\Validation\Services\ValidatorService;
-use NBD\Validation\Providers\RulesProvider;
+use Behance\NBD\Validation\Services\ValidatorService;
+use Behance\NBD\Validation\Providers\RulesProvider;
 
 /**
  * @group validation
@@ -105,7 +105,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function getRulesUnknownKey() {
 
@@ -116,7 +116,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function setRulesMissingArgs() {
 
@@ -149,7 +149,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function appendRuleUnsetKey() {
 
@@ -237,7 +237,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\NotRunException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\NotRunException
    */
   public function getValidatedFieldsNotRun() {
 
@@ -409,7 +409,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function addErrorWrongKey() {
 
@@ -457,7 +457,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function magicGetUnavailable() {
 
@@ -534,7 +534,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
       $this->fail( "Should have thrown exception" );
     }
 
-    catch( NBD\Validation\Exceptions\Validator\FailureException $e ) {
+    catch( Behance\NBD\Validation\Exceptions\Validator\FailureException $e ) {
       $this->assertSame( $validator, $e->getValidator() );
     }
 
@@ -543,7 +543,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\NotRunException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\NotRunException
    */
   public function runNoRules() {
 
@@ -556,7 +556,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runOnlyRequiredError() {
 
@@ -570,7 +570,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Rules\NoSuchRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException
    */
   public function runInvalidRule() {
 
@@ -585,7 +585,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Rules\NoSuchRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException
    */
   public function runInvalidParameterizedRule() {
 
@@ -629,7 +629,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Rules\NoSuchRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException
    */
   public function runNonFunction() {
 
@@ -644,7 +644,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function runCallbackNonExistantClass() {
 
@@ -660,7 +660,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runCallbackWrongParams() {
 
@@ -850,7 +850,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function runFilterBadFunction() {
 
@@ -891,7 +891,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runFilterMissingTrailingBracket() {
 
@@ -962,7 +962,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runRangeWrongParamForRange() {
 
@@ -984,7 +984,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runRangeWrongParams() {
 
@@ -1106,7 +1106,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runStringContainsWrongParams() {
 
@@ -1177,7 +1177,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   /**
    * @test
-   * @expectedException  NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException  Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function runInstanceOfWrongParams() {
 
@@ -1236,7 +1236,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $data      = [ $key  => -1 ];
 
-    $validator = $this->getMock( 'NBD\Validation\Services\ValidatorService', [ '_addError' ], [ $data ] );
+    $validator = $this->getMock( 'Behance\NBD\Validation\Services\ValidatorService', [ '_addError' ], [ $data ] );
 
     $validator->expects( $this->once() )
               ->method( '_addError' )

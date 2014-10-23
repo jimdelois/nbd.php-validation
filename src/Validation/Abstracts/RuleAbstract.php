@@ -1,8 +1,8 @@
 <?php
 
-namespace NBD\Validation\Abstracts;
+namespace Behance\NBD\Validation\Abstracts;
 
-use NBD\Validation\Interfaces\RuleInterface;
+use Behance\NBD\Validation\Interfaces\RuleInterface;
 
 abstract class RuleAbstract implements RuleInterface {
 

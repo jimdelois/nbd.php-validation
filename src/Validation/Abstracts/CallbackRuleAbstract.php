@@ -1,10 +1,10 @@
 <?php
 
-namespace NBD\Validation\Abstracts;
+namespace Behance\NBD\Validation\Abstracts;
 
-use NBD\Validation\Abstracts\RuleAbstract;
+use Behance\NBD\Validation\Abstracts\RuleAbstract;
 
-use NBD\Validation\Exceptions\Validator\RuleRequirementException;
+use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 
 abstract class CallbackRuleAbstract extends RuleAbstract {
 

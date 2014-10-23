@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_ArrayRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\ArrayRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\ArrayRule';
 
   /**
    * @test

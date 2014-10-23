@@ -1,10 +1,10 @@
 <?php
 
-namespace NBD\Validation\Rules;
+namespace Behance\NBD\Validation\Rules;
 
-use NBD\Validation\Abstracts\CallbackRuleAbstract;
-use NBD\Validation\Exceptions\Validator\RuleRequirementException;
-use NBD\Validation\Exceptions\Validator\InvalidRuleException;
+use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
+use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
+use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 
 /**
  * Not to be confused with the callback mechanism the rules are extending, this validator
