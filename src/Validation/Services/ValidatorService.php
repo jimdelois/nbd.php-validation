@@ -4,7 +4,12 @@ namespace Behance\NBD\Validation\Services;
 
 use Behance\NBD\Validation\Interfaces\ValidatorServiceInterface;
 use Behance\NBD\Validation\Interfaces\RulesProviderInterface;
+use Behance\NBD\Validation\Interfaces\RuleInterface;
+
 use Behance\NBD\Validation\Providers\RulesProvider;
+use Behance\NBD\Validation\Formatters\ErrorFormatter;
+use Behance\NBD\Validation\Rules\Templates\CallbackTemplateRule;
+
 use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 use Behance\NBD\Validation\Exceptions\Validator\FailureException;
@@ -36,6 +41,7 @@ class ValidatorService implements ValidatorServiceInterface {
    */
   public function __construct( $cage_data = [], RulesProvider $rules_provider = null ) {
 
+    // When $cage_data is not an array, there will be no data to be validated (at all)
     if ( is_array( $cage_data ) ) {
       $this->setCageData( $cage_data );
     }
@@ -117,7 +123,7 @@ class ValidatorService implements ValidatorServiceInterface {
    *
    * @param array $rule_groups
    *
-   * @return $this  for fluent interface
+   * @return $this  fluent interface
    */
   public function setRules( array $rule_groups ) {
 
@@ -145,6 +151,8 @@ class ValidatorService implements ValidatorServiceInterface {
    *
    * @param string $key
    * @param string $rule
+   *
+   * @return $this  fluent interface
    */
   public function appendRule( $key, $rule ) {
 
@@ -256,48 +264,44 @@ class ValidatorService implements ValidatorServiceInterface {
     foreach ( $rule_set as $key => $rules ) {
 
       $field_failed = false; // Flag this true to end validating field
-      $required     = in_array( self::RULE_REQUIRED, $rules );
       $raw_data     = $this->getCageDataValue( $key );
 
-      // If required and no data is supplied, fail this field
+
       if ( $raw_data === null ) {
 
-        if ( $required ) {
+        // Special Case: stop processing when data is completely missing, involve required rule
 
-          $field_failed = true;
+        if ( in_array( self::RULE_REQUIRED, $rules ) ) {
 
-          $this->_addError( $key, self::RULE_REQUIRED );
+          $context       = $this->_buildErrorContext( $key );
+          $required_rule = $rules_provider->getRule( self::RULE_REQUIRED );
+          $error         = $this->_buildErrorFormatter( $required_rule, $context );
 
-        } // if required
+          $this->_addError( $key, $error );
 
-        // Move on to next field, don't process any more of this rule set
+        } // if in_array required
+
+        // Do not process any additional rules
         continue;
 
-      } // if required + empty
+      } // if raw_data
+
+      // Define default context to be passed to called rules
+      $context = [
+          'key'        => $key,
+          'validator'  => $this
+      ];
 
       // Each rule for the specified key
       foreach ( $rules as $rule ) {
 
-        // If we have encountered a failure, do not process any more rules
-        if ( $field_failed ) {
-          break;
-        }
-
-        // This is a special case rule, do not process it
-        if ( $rule == self::RULE_REQUIRED ) {
-          continue;
-        }
-
         list( $rule_name, $rule_parameters ) = $this->_processRuleIntoFunctionAndArguments( $rule, $key );
 
-        $context = [
-            'key'        => $key,
-            'validator'  => $this,
-            'rule_name'  => $rule_name,
-            'parameters' => $rule_parameters
-        ];
-
         $rule_component = $rules_provider->getRule( $rule_name );
+
+        // Add/override additional context for rule about to be called
+        $context['rule_name']  = $rule_name;
+        $context['parameters'] = $rule_parameters;
 
         //==============================================================================
 
@@ -318,15 +322,21 @@ class ValidatorService implements ValidatorServiceInterface {
 
         // Now that validation rule has run, check the results
         if ( $field_failed ) {
-          $this->_addError( $key, $rule_name );
-        }
 
-        else {
-          // On successful validation, move the "validated" data
-          $this->_valid_data[ $key ] = $raw_data;
-        }
+          $error_context   = $this->_buildErrorContext( $key, $rule_parameters );
+          $error_formatter = $this->_buildErrorFormatter( $rule_component, $error_context );
+
+          $this->_addError( $key, $error_formatter );
+          break;
+
+        } // if field_failed
 
       } // foreach rules
+
+      // On successfully passing all rules, move data to validated array
+      if ( !$field_failed ) {
+        $this->_valid_data[ $key ] = $raw_data;
+      }
 
     } // foreach rules_set
 
@@ -347,7 +357,8 @@ class ValidatorService implements ValidatorServiceInterface {
     $valid = $this->run();
 
     if ( !$valid ) {
-      throw new FailureException( $this->getAllFieldErrors(), 0, null, $this );
+
+      throw new FailureException( $this->getAllFieldErrorMessagesString(), 0, null, $this );
     }
 
     return $valid;
@@ -368,60 +379,71 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
-   * @param string $key        which field to locate error
-   * @param string $delimiter  optionally override preset
-   *
-   * @return string
-   */
-  public function getFieldErrors( $key ) {
-
-    return ( isset( $this->_errors[ $key ] ) )
-           ? $this->_errors[ $key ]
-           : '';
-
-  } // getFieldErrors
-
-
-  /**
-   * IMPORTANT: This method will not output ANYTHING if the supplied source has no members (ex. $_POST is empty, before form is posted)
-   *
-   * @param string $delimiter  optionally override preset
-   *
-   * @return string   each error (if no key is supplied, otherwise a single error) wrapped in the start and end delimiter
-   */
-  public function getAllFieldErrors( $delimiter = null ) {
-
-    $delimiter = ( $delimiter ) ?: $this->getMessageDelimiter();
-
-    return ( empty( $this->_errors ) )
-           ? ''
-           : implode( $delimiter, $this->_errors );
-
-  } // getAllFieldErrors
-
-
-  /**
-   * Return all invalid keys.
+   * Return all fields that failed validation
    *
    * @return array
    */
   public function getFailedFields() {
 
-    return ( empty( $this->_errors ) )
-           ? []
-           : array_keys( $this->_errors );
+    return array_keys( $this->_errors );
 
   } // getFailedFields
 
 
   /**
-   * @return array
+   * Produces a single string of failures to be returned to client
+   *
+   * @param string $field      which error to locate
+   * @param string $delimiter  optionally override preset
+   *
+   * @return string  as fieldname is not
    */
-  public function getFailedFieldMessages() {
+  public function getFieldErrorMessage( $field, array $context = [] ) {
 
-    return $this->_errors;
+    if ( !isset( $this->_errors[ $field ] ) ) {
+      return '';
+    }
 
-  } // getFailedFieldMessages
+    $error = $this->_errors[ $field ];
+
+    return ( $error instanceof ErrorFormatter )
+           ? $error->render( $context )
+           : $error;
+
+  } // getFieldErrorMessage
+
+
+  /**
+   * @return array   each error, keyed by failing field
+   */
+  public function getAllFieldErrorMessages() {
+
+    $fields = $this->getFailedFields();
+    $result = [];
+
+    foreach ( $fields as $field ) {
+      $result[ $field ] = $this->getFieldErrorMessage( $field );
+    }
+
+    return $result;
+
+  } // getAllFieldErrorMessages
+
+
+  /**
+   * @param string $delimiter
+   *
+   * @return string
+   */
+  public function getAllFieldErrorMessagesString( $delimiter = ', ' ) {
+
+    $results = $this->getAllFieldErrorMessages();
+
+    $results = array_values( $results );
+
+    return implode( $delimiter, $results );
+
+  } // getAllFieldErrorMessagesString
 
 
   /**
@@ -439,15 +461,22 @@ class ValidatorService implements ValidatorServiceInterface {
   /**
    * Allows a validation callback function to add a custom error to a field
    *
-   * @param string $key      validator key to tie this error message
-   * @param string $message  error to display for $key, otherwise defaults to generic 'failed validation'
+   * @param string $field    which one failed
+   * @param string $message  error template following structure identical to any rule message template
    */
-  public function addFieldFailure( $key, $message ) {
+  public function addFieldFailure( $field, $message ) {
+
+    $context = $this->_buildErrorContext( $field );
+    $rule    = new CallbackTemplateRule();
+
+    $rule->setErrorTemplate( $message );
+
+    $error   = $this->_buildErrorFormatter( $rule, $context );
 
     // Ensures this is a valid field
-    $this->getFieldRules( $key );
+    $this->getFieldRules( $field );
 
-    $this->_errors[ $key ] = $message;
+    $this->_addError( $field, $error );
 
   } // addFieldFailure
 
@@ -573,32 +602,16 @@ class ValidatorService implements ValidatorServiceInterface {
 
   /**
    * Adds both a default error message with out without a fieldname, plus adds the error key into an array
+   *
+   * @param string $key
+   * @param NBD\Validation\Formatters\ErrorFormatter $error
    */
-  protected function _addError( $key, $rule, $params = '' ) {
+  protected function _addError( $key, ErrorFormatter $error ) {
 
     // Ensure a field that has errors cannot possibly receive this data
     unset( $this->_valid_data[ $key ] );
 
-    switch ( $rule ) {
-
-      case self::RULE_MATCHES: // Special case for matching two fields, $params should be equal to the key of the matching input
-
-        $fieldname2 = ( isset( $this->_field_names[ $key ] ) )
-                      ? $this->_field_names[ $key ]
-                      : 'This field';
-
-        $fieldname1 = ( isset( $this->_field_names[ $params ] ) )
-                      ? $this->_field_names[ $params ]
-                      : 'another field';
-
-        $this->_errors[ $key ] = $fieldname2 . ' does not match ' . $fieldname1;
-        break;
-
-      default:
-        $this->_errors[ $key ] = $this->_buildErrorMessage( $key, $rule );
-        break;
-
-    } // switch rule
+    $this->_errors[ $key ] = $error;
 
   } // _addError
 
@@ -616,59 +629,96 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
-   * @param string $key
-   * @param string $rule
-   *
-   * @return string
-   */
-  protected function _buildErrorMessage( $key, $rule ) {
-
-    $fieldname = ( isset( $this->_field_names[ $key ] ) )
-                 ? $this->_field_names[ $key ]
-                 : 'This field';
-
-    $rule; // TODO: build default messages based on $rule
-
-    return $fieldname . ' failed validation';
-
-  } // _buildErrorMessage
-
-
-  /**
    * @param mixed  $rule
    * @param string $key   field currently being processed
    *
-   * @return array [ 0 => function name, 1 => optional array of parameters ]
+   * @return array [ 0 => function name/Closure, 1 => optional array of parameters ]
    */
   protected function _processRuleIntoFunctionAndArguments( $rule, $key ) {
 
-    // When a [ appears anywhere, this is an attempt to use a rule as parameterized function
-    $param_position  = strpos( $rule, '[' );
     $rule_parameters = [];
 
-    if ( $param_position !== false )  {
+    if ( $rule instanceof \Closure ) {
+      $rule = $this->_convertToCallableName( $rule );
+    }
 
-      // When there's no complimenting bracket, this is a problem
-      if ( strpos( $rule, ']' ) !== ( strlen( $rule ) - 1 ) ) {
-        throw new RuleRequirementException( "Field '{$key}' needs rule parameters encapsulated by []" );
-      }
+    else {
+      // When a [ appears anywhere, this is an attempt to use a rule as parameterized function
+      $param_position = strpos( $rule, '[' );
 
-      // Remove the brackets from the request, leaving a (hopefully) comma-separated list of parameters
-      $rule_arguments  = substr( $rule, ( $param_position + 1 ), strlen( $rule ) );
+      if ( $param_position !== false )  {
 
-      // Remove parameters from the rule name
-      $rule            = substr( $rule, 0, $param_position );
-      $rule_arguments  = substr( $rule_arguments, 0, ( strlen( $rule_arguments ) - 1 ) );
+        // When there's no complimenting bracket, this is a problem
+        if ( substr( $rule, -1 ) !== ']' )  {
+          throw new RuleRequirementException( "Field '{$key}' needs rule parameters encapsulated by []" );
+        }
 
-      // Create an array by dividing arguments along the comma
-      $rule_parameters = explode( ',', $rule_arguments );
+        // Remove the brackets from the request, leaving a (hopefully) comma-separated list of parameters
+        $rule_arguments  = substr( $rule, ( $param_position + 1 ), strlen( $rule ) );
 
-    } // if param_position
+        // Remove parameters from the rule name
+        $rule            = substr( $rule, 0, $param_position );
+        $rule_arguments  = substr( $rule_arguments, 0, ( strlen( $rule_arguments ) - 1 ) );
 
+        // Create an array by dividing arguments along the comma
+        $rule_parameters = explode( ',', $rule_arguments );
+
+      } // if param_position
+
+    } // else (!closure)
 
     // Standardize rules with lowercase first character
     return [ lcfirst( $rule ), $rule_parameters ];
 
   } // _processRuleIntoFunctionAndArguments
+
+
+  /**
+   * Provides backwards compatibility for existing callback rules
+   *
+   * @param Closure $rule
+   *
+   * @return string
+   */
+  protected function _convertToCallableName( \Closure $rule ) {
+
+    // TODO: move this assignment implementation into RulesProvider
+    $new_name = spl_object_hash( $rule );
+
+    $this->getRulesProvider()->setCallbackRule( $new_name, $rule );
+
+    return $new_name;
+
+  } // _convertToCallableName
+
+
+  /**
+   * @param string $key
+   * @param array  $rule_parameters  parameters extracted from the rule definition on creation
+   *
+   * @return array
+   */
+  protected function _buildErrorContext( $key, array $rule_parameters = [] ) {
+
+    return [
+        'fieldname'  => $this->getFieldName( $key ),
+        'field'      => $key,
+        'parameters' => $rule_parameters
+    ];
+
+  } // _buildErrorContext
+
+
+  /**
+   * @param RuleInterface $rule
+   * @param array         $context
+   *
+   * @return ErrorFormatter
+   */
+  protected function _buildErrorFormatter( RuleInterface $rule, array $context ) {
+
+    return new ErrorFormatter( $rule, $context );
+
+  } // _buildErrorFormatter
 
 } // ValidatorService

@@ -38,6 +38,25 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
 
     $name = $this->_class;
     $rule = new $name();
+
+    $closure = $rule->getClosure();
+    $context = [
+        'parameters' => [ 'abc' ]
+    ];
+
+    $closure( 'anything_else', $context );
+
+  } // wrongParameterCount
+
+
+  /**
+   * @test
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
+   */
+  public function missingValidator() {
+
+    $name = $this->_class;
+    $rule = new $name();
     $key2 = 'def';
 
     $validator = new ValidatorService( [ $key2 => 'anything' ] );
@@ -49,7 +68,7 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
 
     $closure( 'anything_else', $context );
 
-  } // wrongParameterCount
+  } // missingValidator
 
 
   /**
@@ -79,6 +98,8 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
         [ '', '', true ],
         [ false, false, true ],
         [ true, true, true ],
+        [ null, true, false ],
+        [ null, null, false ],
         [ $class1, $class1, true ],
         [ $class1, $class2, false ],
         [ $class1, false, false ],

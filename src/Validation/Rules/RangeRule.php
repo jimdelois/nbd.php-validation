@@ -11,6 +11,8 @@ use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
  */
 class RangeRule extends CallbackRuleAbstract {
 
+  const REQUIRED_PARAM_COUNT = 2;
+
   /**
    * @inheritDoc
    */
@@ -18,15 +20,11 @@ class RangeRule extends CallbackRuleAbstract {
 
     $closure = ( function( $data, array $context ) {
 
-      if ( empty( $context['parameters'] ) || count( $context['parameters'] ) !== 2 ) {
-        throw new RuleRequirementException( "Two parameters required for '" . __CLASS__ . "'" );
-      }
-
       if ( is_array( $data ) || is_object( $data ) ) {
         return false;
       }
 
-      list( $min, $max ) = $context['parameters'];
+      list( $min, $max ) = $this->_extractContextParameters( $context );
 
       // IMPORTANT: cast min/max to strings for is_numeric check, otherwise there will be mixed results
       if ( !is_numeric( (string)$min ) || !is_numeric( (string)$max ) ) {

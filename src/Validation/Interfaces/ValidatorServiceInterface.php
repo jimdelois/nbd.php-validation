@@ -128,17 +128,15 @@ interface ValidatorServiceInterface {
    *
    * @return string
    */
-  public function getFieldErrors( $key );
+  public function getFieldErrorMessage( $key );
 
 
   /**
    * IMPORTANT: This method will not output ANYTHING if the supplied source has no members (ex. $_POST is empty, before form is posted)
    *
-   * @param string $delimiter  optionally override preset
-   *
    * @return string   each error (if no key is supplied, otherwise a single error) wrapped in the start and end delimiter
    */
-  public function getAllFieldErrors( $delimiter = null );
+  public function getAllFieldErrorMessages();
 
 
   /**
@@ -147,12 +145,6 @@ interface ValidatorServiceInterface {
    * @return array
    */
   public function getFailedFields();
-
-
-  /**
-   * @return array
-   */
-  public function getFailedFieldMessages();
 
 
   /**

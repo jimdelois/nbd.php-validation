@@ -434,10 +434,12 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $validator->setRule( $key, 'E-Mail', 'required|isEmail' )
               ->addFieldFailure( $key, $message );
 
-    $error_array = $validator->getFailedFieldMessages();
+    $error_array = $validator->getAllFieldErrorMessages();
 
     $this->assertArrayHasKey( $key, $error_array );
     $this->assertEquals( $message, $error_array[ $key ] );
+
+    $this->assertContains( $message, $validator->getAllFieldErrorMessagesString() );
 
   } // addFieldFailure
 
@@ -498,7 +500,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $validator->setRule( 'email', '', '' )
               ->addFieldFailure( $key, $message );
 
-    $this->assertEquals( $message, $validator->getFieldErrors( $key ) );
+    $this->assertEquals( $message, $validator->getFieldErrorMessage( $key ) );
 
   } // getErrorsByKey
 
@@ -619,10 +621,14 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $this->assertTrue( $validator->isFieldFailed( $bad_key ) );
     $this->assertFalse( $validator->isFieldFailed( $good_key ) );
 
-    $errors = $validator->getFailedFieldMessages();
+    $messages      = $validator->getAllFieldErrorMessages();
+    $failed_fields = $validator->getFailedFields();
 
-    $this->assertArrayHasKey( $bad_key, $errors );
-    $this->assertArrayNotHasKey( $good_key, $errors );
+    $this->assertArrayHasKey( $bad_key, $messages );
+    $this->assertContains( $bad_key, $failed_fields );
+
+    $this->assertArrayNotHasKey( $good_key, $messages );
+    $this->assertArrayNotHasKey( $good_key, $failed_fields );
 
   } // runFailedFieldValidation
 
@@ -693,10 +699,40 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
       $this->assertTrue( $validator->run() );
       $this->assertFalse( $validator->isFieldFailed( $key ) );
+      $this->assertEquals( '', $validator->getFieldErrorMessage( $key ) );
 
     } // foreach values
 
+    $this->assertEquals( [], $validator->getFailedFields() );
+    $this->assertEquals( [], $validator->getAllFieldErrorMessages() );
+
   } // runMaximumGood
+
+
+  /**
+   * @test
+   */
+  public function runClosureConversion() {
+
+    $key      = 'sha';
+    $value    = 'rvoweicoewicjwoi102931029380921oimi1m3';
+    $function = ( function( $data ) use ( $value ) {
+      return ( $data == $value );
+    } );
+
+    $hash      = spl_object_hash( $function );
+    $validator = new ValidatorService( [ $key => $value ] );
+
+    $validator->setRule( $key, 'Commit SHA', [ 'required', 'maxLength[800]', 'alphaNumeric', $function ] );
+
+    $this->assertTrue( $validator->run() );
+
+    $rules     = $validator->getRulesProvider();
+    $container = $rules->getRule( $hash );
+
+    $this->assertSame( $function, $container->getClosure() );
+
+  } // runClosureConversion
 
 
   /**
@@ -1240,7 +1276,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $validator->expects( $this->once() )
               ->method( '_addError' )
-              ->with( $key, $rule );
+              ->with( $key, $this->isInstanceOf( 'Behance\NBD\Validation\Formatters\ErrorFormatter' ) );
 
     $validator->setRule( $key, 'Number', "required|integer|{$rule}[{$class},{$name}]" );
 

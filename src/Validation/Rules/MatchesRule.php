@@ -11,6 +11,8 @@ use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
  */
 class MatchesRule extends CallbackRuleAbstract {
 
+  const REQUIRED_PARAM_COUNT = 1;
+
   /**
    * {@inheritDoc}
    */
@@ -22,11 +24,7 @@ class MatchesRule extends CallbackRuleAbstract {
         throw new RuleRequirementException( "Validator required as context for '" . __CLASS__ . "'" );
       }
 
-      if ( empty( $context['parameters'] ) || count( $context['parameters'] ) !== 1 ) {
-        throw new RuleRequirementException( "One parameter is required for '" . __CLASS__ . "'" );
-      }
-
-      list( $other_field_key ) = $context['parameters'];
+      list( $other_field_key ) = $this->_extractContextParameters( $context );
 
       $other_field = $context['validator']->getCageDataValue( $other_field_key );
 

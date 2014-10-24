@@ -19,15 +19,11 @@ class FilterRule extends CallbackRuleAbstract {
     // IMPORTANT: $raw_data is pass by reference, save transformed output there
     $closure = ( function( $data, array $context, &$raw_data = null ) {
 
-      if ( empty( $context['parameters'] ) || !is_array( $context['parameters'] ) ) {
-        throw new RuleRequirementException( "Parameters required for '" . __CLASS__ . "'" );
-      }
-
       if ( is_array( $data ) || is_object( $data ) ) {
         return false;
       }
 
-      $filter_functions = $context['parameters'];
+      $filter_functions = $this->_extractContextParameters( $context );
 
       foreach ( $filter_functions as $filter ) {
 

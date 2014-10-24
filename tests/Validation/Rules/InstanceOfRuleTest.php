@@ -28,10 +28,9 @@ class NBD_Validation_Rules_InstanceOfRuleTest extends PHPUnit_Framework_TestCase
    */
   public function invalidParameters() {
 
-    $name = $this->_class;
-    $rule = new $name();
-
-    $value = 123;
+    $name  = $this->_class;
+    $rule  = new $name();
+    $value = ( function() {} );
 
     $rule->isValid( $value, [] );
 

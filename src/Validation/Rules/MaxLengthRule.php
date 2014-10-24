@@ -3,13 +3,14 @@
 namespace Behance\NBD\Validation\Rules;
 
 use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
-use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 
 /**
  * Validates that data is a string over a certain length of characters
  */
 class MaxLengthRule extends CallbackRuleAbstract {
+
+  const REQUIRED_PARAM_COUNT = 1;
 
   /**
    * @inheritDoc
@@ -18,17 +19,13 @@ class MaxLengthRule extends CallbackRuleAbstract {
 
     $closure = ( function( $data, array $context ) {
 
-      if ( empty( $context['parameters'] ) || count( $context['parameters'] ) !== 1 ) {
-        throw new RuleRequirementException( "'" . __CLASS__ . "' requires one parameter" );
-      }
-
       if ( !is_string( $data ) ) {
         return false;
       }
 
       $length = mb_strlen( $data, 'UTF-8' );
 
-      list( $max_length ) = $context['parameters'];
+      list( $max_length ) = $this->_extractContextParameters( $context );
 
       // Easily ensure this is a positive integer
       if ( !ctype_digit( (string)$max_length ) ) {
