@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_RangeRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\RangeRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\RangeRule';
 
   /**
    * @test
@@ -24,7 +24,7 @@ class NBD_Validation_Rules_RangeRuleTest extends PHPUnit_Framework_TestCase {
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function invalidRangeMaxParameter() {
 
@@ -42,7 +42,7 @@ class NBD_Validation_Rules_RangeRuleTest extends PHPUnit_Framework_TestCase {
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function invalidRangeMinParameter() {
 

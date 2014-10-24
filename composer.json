@@ -11,12 +11,15 @@
     "description": "NBD.php Validation Component",
     "autoload": {
         "psr-4": {
-            "NBD\\": "src/"
+            "Behance\\NBD\\": "src/"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "require": {
         "php": ">=5.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit":"~4.3"
     },
     "extra": {
         "branch-alias": {

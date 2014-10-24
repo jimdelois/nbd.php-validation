@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_FilterRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\FilterRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\FilterRule';
 
   /**
    * @test
@@ -28,7 +28,7 @@ class NBD_Validation_Rules_FilterRuleTest extends PHPUnit_Framework_TestCase {
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function invalidParameters() {
 
@@ -44,7 +44,7 @@ class NBD_Validation_Rules_FilterRuleTest extends PHPUnit_Framework_TestCase {
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function invalidFilterFunction() {
 

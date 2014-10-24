@@ -1,5 +1,5 @@
 <?php
 
-namespace NBD\Validation\Exceptions;
+namespace Behance\NBD\Validation\Exceptions;
 
 class Exception extends \Exception {}

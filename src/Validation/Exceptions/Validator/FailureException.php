@@ -1,22 +1,27 @@
 <?php
 
-namespace NBD\Validation\Exceptions\Validator;
+namespace Behance\NBD\Validation\Exceptions\Validator;
 
-use NBD\Validation\Exceptions\Exception;
-use NBD\Validation\Interfaces\ValidatorServiceInterface;
+use Behance\NBD\Validation\Exceptions\Exception;
+use Behance\NBD\Validation\Interfaces\ValidatorServiceInterface;
 
 class FailureException extends Exception {
 
   protected $_validator;
 
   /**
-   * @param ValidatorServiceInterface $validator  failed service
+   * {@inheritDoc}
    */
-  public function setValidator( ValidatorServiceInterface $validator ) {
+  public function __construct( $message = '', $code = 0, \Exception $previous = null, ValidatorServiceInterface $validator = null ) {
 
-    $this->_validator = $validator;
+    parent::__construct( $message, $code, $previous );
 
-  } // setValidator
+    if ( $validator ) {
+      $this->_validator = $validator;
+    }
+
+  } // __construct
+
 
   /**
    * @return ValidatorServiceInterface  when available

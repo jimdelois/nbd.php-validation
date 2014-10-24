@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_StringContainsRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\StringContainsRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\StringContainsRule';
 
   /**
    * @test
@@ -24,7 +24,7 @@ class NBD_Validation_Rules_StringContainsRuleTest extends PHPUnit_Framework_Test
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function invalidParameters() {
 
@@ -40,7 +40,7 @@ class NBD_Validation_Rules_StringContainsRuleTest extends PHPUnit_Framework_Test
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function invalidContextParameters() {
 

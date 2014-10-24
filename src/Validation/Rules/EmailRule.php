@@ -1,8 +1,8 @@
 <?php
 
-namespace NBD\Validation\Rules;
+namespace Behance\NBD\Validation\Rules;
 
-use NBD\Validation\Abstracts\RegexRuleAbstract;
+use Behance\NBD\Validation\Abstracts\RegexRuleAbstract;
 
 /**
  * Represents the container of a rule to be "run"

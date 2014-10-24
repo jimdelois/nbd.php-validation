@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_AlphaRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\AlphaRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\AlphaRule';
 
   /**
    * @test

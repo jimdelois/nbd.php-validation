@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_MaxLengthRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\MaxLengthRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\MaxLengthRule';
 
   /**
    * @test
@@ -24,7 +24,7 @@ class NBD_Validation_Rules_MaxLengthRuleTest extends PHPUnit_Framework_TestCase 
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function invalidParameters() {
 
@@ -40,7 +40,7 @@ class NBD_Validation_Rules_MaxLengthRuleTest extends PHPUnit_Framework_TestCase 
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function invalidLengthParameter() {
 
@@ -58,7 +58,7 @@ class NBD_Validation_Rules_MaxLengthRuleTest extends PHPUnit_Framework_TestCase 
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\InvalidRuleException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException
    */
   public function negativeLengthParameter() {
 

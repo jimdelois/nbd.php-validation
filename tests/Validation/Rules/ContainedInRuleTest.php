@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_ContainedInRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\ContainedInRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\ContainedInRule';
 
   /**
    * @test
@@ -24,7 +24,7 @@ class NBD_Validation_Rules_ContainedInRuleTest extends PHPUnit_Framework_TestCas
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function invalidParameters() {
 

@@ -11,7 +11,7 @@
     "description": "NBD.php Validation Component",
     "autoload": {
         "psr-4": {
-            "NBD\\Validation\\": ""
+            "Behance\NBD\\Validation\\": ""
         }
     },
     "target-dir": "Validation",

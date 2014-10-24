@@ -1,7 +1,7 @@
 <?php
 
-namespace NBD\Validation\Exceptions\Validator;
+namespace Behance\NBD\Validation\Exceptions\Validator;
 
-use NBD\Validation\Exceptions\Exception;
+use Behance\NBD\Validation\Exceptions\Exception;
 
 class InvalidRuleException extends Exception {}

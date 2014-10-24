@@ -4,7 +4,7 @@
  */
 class NBD_Validation_Rules_IntegerRuleTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Rules\IntegerRule';
+  protected $_class = 'Behance\NBD\Validation\Rules\IntegerRule';
 
   /**
    * @test

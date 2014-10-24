@@ -4,11 +4,11 @@
  */
 class NBD_Validation_Abstracts_CallbackRuleAbstractTest extends PHPUnit_Framework_TestCase {
 
-  protected $_class = 'NBD\Validation\Abstracts\CallbackRuleAbstract';
+  protected $_class = 'Behance\NBD\Validation\Abstracts\CallbackRuleAbstract';
 
   /**
    * @test
-   * @expectedException NBD\Validation\Exceptions\Validator\RuleRequirementException
+   * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */
   public function getClosureNotSet() {
 

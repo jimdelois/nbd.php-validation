@@ -1,6 +1,6 @@
 <?php
 
-namespace NBD\Validation\Interfaces;
+namespace Behance\NBD\Validation\Interfaces;
 
 interface ValidatorServiceInterface {
 

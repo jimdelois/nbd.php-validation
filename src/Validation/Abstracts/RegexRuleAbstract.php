@@ -1,8 +1,8 @@
 <?php
 
-namespace NBD\Validation\Abstracts;
+namespace Behance\NBD\Validation\Abstracts;
 
-use NBD\Validation\Abstracts\RuleAbstract;
+use Behance\NBD\Validation\Abstracts\RuleAbstract;
 
 abstract class RegexRuleAbstract extends RuleAbstract {
 

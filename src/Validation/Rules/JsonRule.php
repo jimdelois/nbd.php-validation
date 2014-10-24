@@ -1,8 +1,8 @@
 <?php
 
-namespace NBD\Validation\Rules;
+namespace Behance\NBD\Validation\Rules;
 
-use NBD\Validation\Abstracts\CallbackRuleAbstract;
+use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
 
 /**
  * Validates that data is a proper JSON-encoded string
