@@ -14,4 +14,11 @@ interface RuleInterface {
    */
   public function isValid( $data, array $context = null );
 
+
+  /**
+   * @return string  templated (not rendered) message to use if $this rule fails
+   */
+  public function getErrorTemplate();
+
+
 } // RuleInterface

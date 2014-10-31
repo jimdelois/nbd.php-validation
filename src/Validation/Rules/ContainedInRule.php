@@ -3,7 +3,6 @@
 namespace Behance\NBD\Validation\Rules;
 
 use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
-use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 
 /**
  * Validates that data is a haystack array that contains a certain needle
@@ -17,15 +16,13 @@ class ContainedInRule extends CallbackRuleAbstract {
 
     $closure = ( function( $data, array $context ) {
 
-      if ( empty( $context['parameters'] ) || !is_array( $context['parameters'] ) ) {
-        throw new RuleRequirementException( "Parameters required for '" . __CLASS__ . "'" );
-      }
+      $haystack = $this->_extractContextParameters( $context );
 
       if ( is_array( $data ) || is_object( $data ) ) {
         return false;
       }
 
-      return in_array( $data, $context['parameters'] );
+      return in_array( $data, $haystack );
 
     } );
 

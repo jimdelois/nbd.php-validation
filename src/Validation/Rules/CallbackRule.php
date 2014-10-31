@@ -3,7 +3,6 @@
 namespace Behance\NBD\Validation\Rules;
 
 use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
-use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 
 /**
@@ -12,6 +11,8 @@ use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
  */
 class CallbackRule extends CallbackRuleAbstract {
 
+  const REQUIRED_PARAM_COUNT = 2;
+
   /**
    * @inheritDoc
    */
@@ -19,11 +20,7 @@ class CallbackRule extends CallbackRuleAbstract {
 
     $closure = ( function( $data, array $context ) {
 
-      if ( empty( $context['parameters'] ) || count( $context['parameters'] ) !== 2 ) {
-        throw new RuleRequirementException( "Two parameters required for '" . __CLASS__ . "'" );
-      }
-
-      list( $object_name, $function_name ) = $context['parameters'];
+      list( $object_name, $function_name ) = $this->_extractContextParameters( $context );
 
       if ( !class_exists( $object_name ) ) {
         throw new InvalidRuleException( "Invalid class '{$object_name}' for callback" );
