@@ -12,6 +12,8 @@ class MaxLengthRule extends CallbackRuleAbstract {
 
   const REQUIRED_PARAM_COUNT = 1;
 
+  protected $_error_template = "%fieldname% must be %length% characters or less";
+
   /**
    * @inheritDoc
    */
@@ -39,5 +41,19 @@ class MaxLengthRule extends CallbackRuleAbstract {
     $this->setClosure( $closure );
 
   } // __construct
+
+
+  /**
+   * {@inheritDoc}
+   */
+  public function convertFormattingContext( array $context ) {
+
+    list( $length )    = $this->_extractContextParameters( $context );
+    $context['length'] = $length;
+
+    return $context;
+
+  } // convertFormattingContext
+
 
 } // MaxLengthRule
