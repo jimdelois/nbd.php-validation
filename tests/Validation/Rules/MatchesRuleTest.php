@@ -31,6 +31,54 @@ class NBD_Validation_Rules_MatchesRuleTest extends PHPUnit_Framework_TestCase {
 
 
   /**
+   * {@inheritDoc}
+   */
+  public function getErrorTemplate() {
+
+
+  } // getErrorTemplate
+
+
+  /**
+   * @test
+   */
+  public function errorTemplate() {
+
+    $value1 = '123';
+    $value2 = '456';
+
+    $key1   = 'abc';
+    $key2   = 'def';
+
+    $name1  = 'First Field';
+    $name2  = 'Second Field';
+
+    $cage   = [
+        $key1 => $value1,
+        $key2 => $value2
+    ];
+
+    $validator = new ValidatorService( $cage );
+    $validator->setRule( $key1, $name1, 'required|alphanumeric' )
+              ->setRule( $key2, $name2, 'required|alphanumeric|matches[' . $key1 . ']' );
+
+    $validator->run();
+
+    $errors = $validator->getAllFieldErrorMessages();
+
+    // Ensure the second field has failed, not the first
+    $this->assertArrayHasKey( $key2, $errors );
+    $this->assertArrayNotHasKey( $key1, $errors );
+
+    $message = $errors[ $key2 ];
+
+    $this->assertStringStartsWith( $name2, $message );
+    $this->assertStringEndsWith( $name1, $message );
+
+  } // errorTemplate
+
+
+  /**
    * @test
    * @expectedException Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
    */

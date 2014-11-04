@@ -8,6 +8,9 @@ use Behance\NBD\Validation\Providers\RulesProvider;
  */
 class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_TestCase {
 
+  private $_target = 'Behance\NBD\Validation\Services\ValidatorService';
+
+
   /**
    * @test
    */
@@ -495,12 +498,16 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $validator = new ValidatorService();
     $key       = 'email';
-    $message   = 'a message goes here';
+    $name      = 'E-Mail';
 
-    $validator->setRule( 'email', '', '' )
-              ->addFieldFailure( $key, $message );
+    $message   = '%fieldname% was not good enough';
+    $expected  = "{$name} was not good enough";
 
-    $this->assertEquals( $message, $validator->getFieldErrorMessage( $key ) );
+
+    $validator->setRule( $key, $name, 'required|email' )
+      ->addFieldFailure( $key, $message );
+
+    $this->assertEquals( $expected, $validator->getFieldErrorMessage( $key ) );
 
   } // getErrorsByKey
 
@@ -516,6 +523,8 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
     $validator->setRule( $key, 'ABC', "required|stringContains[{$value}]" );
 
     $this->assertTrue( $validator->runStrict() );
+
+    $this->assertEquals( '', $validator->getFieldErrorMessage( $key ) );
 
   } // runStrictGood
 
@@ -683,35 +692,6 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
   /**
    * @test
    */
-  public function runMaximumGood() {
-
-    $key    = 'sha';
-    $values = [
-        'rvoweicoewicjwoi102931029380921oimi1m3',
-        'foj4foi23c239cj2039cjqasca20kd01ewwac2',
-    ];
-
-    foreach ( $values as $value ) {
-
-      $validator = new ValidatorService( [ $key => $value ] );
-
-      $validator->setRule( $key, 'Commit SHA', 'required|maxLength[800]|alphaNumeric' );
-
-      $this->assertTrue( $validator->run() );
-      $this->assertFalse( $validator->isFieldFailed( $key ) );
-      $this->assertEquals( '', $validator->getFieldErrorMessage( $key ) );
-
-    } // foreach values
-
-    $this->assertEquals( [], $validator->getFailedFields() );
-    $this->assertEquals( [], $validator->getAllFieldErrorMessages() );
-
-  } // runMaximumGood
-
-
-  /**
-   * @test
-   */
   public function runClosureConversion() {
 
     $key      = 'sha';
@@ -736,88 +716,101 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
 
   /**
-   * @test
+   * @return array
    */
-  public function runMaximumBad() {
+  public function maximumStringProvider() {
 
-    $max    = 10;
-    $key    = 'sha';
-    $values = [
-        'moretextthanmaximum',
-        1234567890,
-        9876543210,
-        true,
-        false,
-        0,
-        1
+    return [
+        [ 5, '',             true ],
+        [ 5, 'abcd',         true ],
+        [ 5, 'abcde',        true ],
+        [ 5, 'abcdef',       false ],
+        [ 5, 'abcdefghijkl', false ],
+        [ 5, true,           false ], // Will all fail for not being strings
+        [ 5, false,          false ],
+        [ 5, 5,              false ],
+        [ 5, -5,             false ],
+        [ 5, 0,              false ],
     ];
 
-    foreach ( $values as $value ) {
-
-      $validator = new ValidatorService( [ $key => $value ] );
-
-      if ( is_string( $value ) ) {
-        $this->assertTrue( strlen( $value ) > $max );
-      }
-
-      $validator->setRule( 'sha', 'Commit SHA', "required|alphaNumeric|maxLength[{$max}]" );
-
-      $this->assertFalse( $validator->run() );
-
-    } // foreach values
-
-  } // runMaximumBad
+  } // maximumStringProvider
 
 
   /**
    * @test
+   * @dataProvider maximumStringProvider
    */
-  public function runMinimumGood() {
+  public function runMaximum( $max, $value, $expected ) {
 
-    $value     = 'textbeyondtheminimum';
-    $validator = new ValidatorService( [ 'title' => $value ] );
-    $min       = 10;
+    $name      = 'Commit SHA';
+    $field     = 'sha';
+    $validator = new ValidatorService( [ $field => $value ] );
 
-    $this->assertTrue( strlen( $value ) > $min );
-    $validator->setRule( 'title', 'Title', "required|minLength[{$min}]|alpha" );
+    $validator->setRule( $field, $name, "required|maxLength[{$max}]" );
 
-    $this->assertTrue( $validator->run() );
+    $this->assertEquals( $expected, $validator->run() );
 
-  } // runMinimumGood
+    if ( !$expected ) {
+
+      $errors = $validator->getAllFieldErrorMessages();
+
+      // Ensure both template variables were replaced
+      $this->assertArrayHasKey( $field, $errors );
+      $this->assertContains( (string)$max, $errors[ $field ] );
+      $this->assertContains( $name, $errors[ $field ] );
+
+    } // if !expected
+
+
+  } // runMaximum
+
+
+  /**
+   * @return array
+   */
+  public function minimumStringProvider() {
+
+    return [
+        [ 5, '',             false ],
+        [ 5, 'abcd',         false ],
+        [ 5, 'abcde',        true ],
+        [ 5, 'abcdef',       true ],
+        [ 5, 'abcdefghijkl', true ],
+        [ 5, true,           false ],
+        [ 5, false,          false ],
+        [ 5, 5,              false ],
+        [ 5, -5,             false ],
+        [ 5, 0,              false ],
+    ];
+
+  } // minimumStringProvider
 
 
   /**
    * @test
+   * @dataProvider minimumStringProvider
    */
-  public function runMinimumBad() {
+  public function runMinimum( $min, $value, $expected ) {
 
-    $key    = 'sha';
-    $min    = 800;
-    $values = [
-        'notenoughtexttomeetmin',
-        'j2j039jv409gj2309-e0iga',
-        'gwoj30cokspcoksdc',
-        800,
-        8010,
-        1234567890,
-        true,
-        false,
-    ];
+    $field     = 'title';
+    $name      = 'Field Title';
+    $validator = new ValidatorService( [ $field => $value ] );
+    $validator->setRule( $field, $name, "required|minLength[{$min}]" );
 
-    foreach ( $values as $value ) {
+    $this->assertEquals( $expected, $validator->run() );
 
-      $validator = new ValidatorService( [ $key => $value ] );
+    if ( !$expected ) {
 
-      $this->assertFalse( strlen( $value ) > $min );
+      $errors = $validator->getAllFieldErrorMessages();
 
-      $validator->setRule( $key, 'Commit SHA', "required|alphaNumeric|minLength[{$min}]" );
+      // Ensure both template variables were replaced
+      $this->assertArrayHasKey( $field, $errors );
+      $this->assertContains( (string)$min, $errors[ $field ] );
+      $this->assertContains( $name, $errors[ $field ] );
 
-      $this->assertFalse( $validator->run() );
-      $this->assertTrue( $validator->isFieldFailed( $key ) );
+    } // if !expected
 
-    } // foreach values
-
-  } // runMinimumBad
+  } // runMinimum
 
 
   /**
@@ -1267,20 +1260,18 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
     $class     = __CLASS__;
     $key       = 'number';
-    $name      = 'callbackFailNoErrorAdded';
+    $name      = 'Number';
+    $name      = 'callbackFailNoErrorAdded'; // Defined below
     $rule      = 'callback';
 
-    $data      = [ $key  => -1 ];
+    $validator = $this->getMock( $this->_target, null );
 
-    $validator = $this->getMock( 'Behance\NBD\Validation\Services\ValidatorService', [ '_addError' ], [ $data ] );
+    $validator->setCageData( [ $key  => -1 ] );
 
-    $validator->expects( $this->once() )
-              ->method( '_addError' )
-              ->with( $key, $this->isInstanceOf( 'Behance\NBD\Validation\Formatters\ErrorFormatter' ) );
+    $validator->setRule( $key, $name, "required|integer|{$rule}[{$class},{$name}]" );
+    $this->assertFalse( $validator->run() );
 
-    $validator->setRule( $key, 'Number', "required|integer|{$rule}[{$class},{$name}]" );
-
-    $validator->run(); // IMPORTANT: since _addError is mocked, do not assert return value
+    $this->assertStringStartsWith( $name, $validator->getFieldErrorMessage( $key ) );
 
   } // runCallbackProcessDefaultError
 

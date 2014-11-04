@@ -46,6 +46,20 @@ abstract class RuleAbstract implements RuleInterface {
 
 
   /**
+   * Allows rule to format additional replacements
+   * Children can override this method, inserting fields into $context to be used for template replacement
+   *
+   * @param array $parameters
+   *
+   * @return array
+   */
+  public function convertFormattingContext( array $context ) {
+
+    return $context;
+
+  } // convertFormattingContext
+
+  /**
    * When a REQUIRED_PARAM_COUNT constant is defined, requires that many
    * items from context parameters and returns them to the caller
    *
