@@ -5,7 +5,7 @@ namespace Behance\NBD\Validation\Rules;
 use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
 
 /**
- * Validates that data is a haystack array that contains a certain needle
+ * Validates that data is a haystack array that contains a certain needle, the inverse of StringContainsRule
  */
 class ContainedInRule extends CallbackRuleAbstract {
 

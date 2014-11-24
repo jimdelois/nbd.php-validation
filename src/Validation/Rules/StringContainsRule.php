@@ -6,7 +6,7 @@ use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
 use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 
 /**
- * Validates that data is a string that contains a sequence of characters
+ * Validates that data is a string that contains a sequence of characters, the inverse of ContainedInRule
  */
 class StringContainsRule extends CallbackRuleAbstract {
 
