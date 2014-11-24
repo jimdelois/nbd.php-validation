@@ -28,50 +28,57 @@ use Behance\NBD\Validation\Services\ValidatorService;
 
 $validator = new ValidatorService();
 
-// Define a series of rules: field key, field name, and a pipe-separated sequence of validator rules (from list below)
-$validator->setRule( 'email',      'E-Mail',     'required|email' )
-          ->setRule( 'first_name', 'First Name', 'required|alpha' )
-          ->setRule( 'last_name',  'Last Name',  'required|alpha' );
-
 // Insert data to be validated
 $validator->setCageData( $_POST );
+
+// Define a series of rules: field key, field name, and sequence of validator rules
+$validator->setRule( 'email',      'E-Mail',     'required|email' )
+          ->setRule( 'first_name', 'First Name', 'required|alpha' )         // Can be pipe-separated
+          ->setRule( 'last_name',  'Last Name',  [ 'required', 'alpha' ] ); // Or an array
 
 // Obtain a single result for whether this data set passes the defined rules
 $valid = $validator->run();
 
 if ( !$valid ) {
 
-  // Loop through the failing fields
-  $errors = $validator->getErrorMessageArray();
+  // During failures, retrieve error messages keyed by failing field
+  $errors = $validator->getAllFieldErrorMessages();
 
   foreach ( $errors as $field => $message ) {
     // ...
   }
 
-  // Retrieves an error message string for all failed fields
-  $error_message = $validator->getErrors();
+  // Or, retrieve a single error message string for all failures
+  $error_message = $validator->getAllFieldErrorMessagesString();
 
-  // Just retrieve the error message for email field
-  $email_message = $validator->getErrors( 'email' );
+  // Or, just retrieve the error message for email field
+  $email_message = $validator->getFieldErrorMessage( 'email' );
 
-  // Just retrieve the field keys that failed
-  $error_keys    = $validator->getErrorKeys();
+  // Or, just retrieve the fields that failed
+  $error_keys    = $validator->getFailedFields();
 
 } // if !valid
 
 else {
 
   // As a convenience, valid data points are available as magic properties
-  $email      = $validator->email;
+  $email = $validator->email;
+
   $first_name = $validator->first_name;
   $last_name  = $validator->last_name;
 
-  // Or, retrieve valid fields as a key-value array
-  $fields = $validator->getValidData(); // ex. [ 'email' => xxx, ... ],  will discard unvalidated/failed fields
+  // Or, retrieve without magic
+  $email = $validator->getValidatedField( 'email' );
 
-  // Triple check that a field is valid
-  $email_valid = $validator->isFailed( 'email' );   // false
-  $field_name  = $validator->getFieldName( $key );  // E-Mail
+
+  // Retrieve fields that passed validation with values as a key-value array
+  $fields = $validator->getValidatedData(); // ex. [ 'email' => 'xxx@email.com' ]
+
+  // Check the inverse, did field fail?
+  $email_valid = $validator->isFieldFailed( 'email' ); // false
+
+  // Grab the text name assigned to field
+  $field_name  = $validator->getFieldName( $key ); // E-Mail
 
 } // else (valid)
 ```
@@ -87,8 +94,9 @@ else {
 * decimal
 * float
 * integer
-* url
 * json
+* notEmpty
+* url
 
 
 #####Available parameterized validator rules

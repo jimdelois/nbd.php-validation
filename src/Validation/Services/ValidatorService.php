@@ -410,6 +410,8 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
+   * Builds an array of field failures with their failure messages
+   *
    * @return array   each error, keyed by failing field
    */
   public function getAllFieldErrorMessages() {
@@ -427,6 +429,8 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
+   * Builds a single string to represent any/everything that failed, broken up by $delimiter per field
+   *
    * @param string $delimiter
    *
    * @return string
