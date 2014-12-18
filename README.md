@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/behance/nbd.php-validation.svg?branch=master)](https://travis-ci.org/behance/nbd.php-validation)
+
 NBD.php - Validation Component
 ==============================
 
