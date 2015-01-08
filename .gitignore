@@ -1,4 +1,13 @@
 
+# OSX os files
 .DS_Store
+.DS_Store?
 
+# User-specific phpunit.xml files
+/phpunit.xml
+
+#
+/.idea/
+
+# Composer packages
 /vendor/
