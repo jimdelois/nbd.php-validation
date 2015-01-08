@@ -97,6 +97,7 @@ else {
 * json
 * notEmpty
 * url
+* hexColor
 
 
 #####Available parameterized validator rules
