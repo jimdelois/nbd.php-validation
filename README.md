@@ -31,9 +31,10 @@ use Behance\NBD\Validation\Services\ValidatorService;
 $validator = new ValidatorService();
 
 // Define a series of rules: field key, field name, and a pipe-separated sequence of validator rules (from list below)
-$validator->setRule( 'email',      'E-Mail',     'required|email' )
-          ->setRule( 'first_name', 'First Name', 'required|alpha' )
-          ->setRule( 'last_name',  'Last Name',  'required|alpha' );
+$validator->setRule( 'email',      'E-Mail',          'required|email' )
+          ->setRule( 'first_name', 'First Name',      'required|alpha' )
+          ->setRule( 'last_name',  'Last Name',       'required|alpha' )
+          ->setRule( 'middle',      'Middle Initial', 'alpha|maxLength[1]' );
 
 // Insert data to be validated
 $validator->setCageData( $_POST );
@@ -67,6 +68,9 @@ else {
   $email      = $validator->email;
   $first_name = $validator->first_name;
   $last_name  = $validator->last_name;
+
+  // You can check if a magic property exists using isset() whether or not it has passed validation.
+  $has_middle = isset( $validator->middle );
 
   // Or, retrieve valid fields as a key-value array
   $fields = $validator->getValidData(); // ex. [ 'email' => xxx, ... ],  will discard unvalidated/failed fields

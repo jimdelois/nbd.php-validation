@@ -1277,6 +1277,53 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
 
   /**
+   * @test
+   * @dataProvider issetOnFieldAsPropertyProvider
+   */
+  public function issetOnFieldAsProperty( $value, $rule, $outcome ) {
+
+    $data = [
+        'field_under_test' => $value
+    ];
+
+    $validator = new ValidatorService( $data );
+
+    $validator->setRule( 'field_under_test',   'Field Under Test',   $rule );
+
+    $validator->run();
+
+    $this->assertEquals( $outcome, isset( $validator->field_under_test ) );
+
+  } // issetOnFieldAsProperty
+
+
+  /**
+   * @test
+   * @dataProvider issetOnFieldAsPropertyBadProvider
+   */
+  public function issetOnFieldAsPropertyBad( $set_field, $check_field, $expected_exception ) {
+
+    $data = [
+        $set_field => 'Some data'
+    ];
+
+    $validator = new ValidatorService( $data );
+
+    $validator->setRule( $check_field, 'Field Under Test', 'required|minLength[1]' );
+
+    if ( $expected_exception !== 'Behance\NBD\Validation\Exceptions\Validator\NotRunException' ) {
+      $validator->run();
+    }
+
+    $this->setExpectedException( $expected_exception );
+
+    // Invocation
+    isset( $validator->$set_field );
+
+  } // issetOnFieldAsPropertyBad
+
+
+  /**
    * @return bool
    */
   public static function callbackIsIntPositive( $data ) {
@@ -1300,5 +1347,30 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
 
   } // callbackFailNoErrorAdded
 
+
+  /**
+   * @return array
+   */
+  public function issetOnFieldAsPropertyProvider() {
+
+    return [
+        [ 'Some text', 'required|minLength[1]', true ],
+        [ 'Some text', 'required|maxLength[1]', false ],
+        [ '0',         'required|range[0,1]',      true ]
+    ];
+
+  } // issetOnFieldAsPropertyProvider
+
+  /**
+   * @return array
+   */
+  public function issetOnFieldAsPropertyBadProvider() {
+
+    return [
+        [ 'field_name', 'field_name',    'Behance\NBD\Validation\Exceptions\Validator\NotRunException' ],
+        [ 'field_name', 'name_of_field', 'Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException' ]
+    ];
+
+  } // issetOnFieldAsPropertyBadProvider
 
 } // NBD_Validation_Services_ValidatorServiceTest
