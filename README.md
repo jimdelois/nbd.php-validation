@@ -88,9 +88,11 @@ else {
 * email
 * decimal
 * float
+* hexColor
 * integer
-* url
 * json
+* notEmpty
+* url
 
 
 #####Available parameterized validator rules
@@ -99,7 +101,7 @@ Parameters are defined comma-separated inside brackets after rule:
 
 <table>
 <tr><th>Rule           </th><th>Usage                        </th><th>Params</th><th>Explanation</th></tr>
-<tr><td>matches        </td><td>matches[target]              </td><td>1 </td><td>does input match string 'target'</td></tr>
+<tr><td>matches        </td><td>matches[target]              </td><td>1 </td><td>does the input match the value from the parameter with key 'target'</td></tr>
 <tr><td>minLength      </td><td>minLength[5]                 </td><td>1 </td><td>is string input length >=5 characters (defaults UTF-8, not byte count)</td></tr>
 <tr><td>maxLength      </td><td>maxLength[5]                 </td><td>1 </td><td>is string input length <=5 characters (defaults UTF-8, not byte count)</td></tr>
 <tr><td>instanceOf     </td><td>instanceOf[stdClass]         </td><td>1 </td><td>is input an object and of type 'stdClass'</td></tr>
