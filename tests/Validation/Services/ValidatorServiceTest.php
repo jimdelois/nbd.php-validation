@@ -33,7 +33,7 @@ class NBD_Validation_Services_ValidatorServiceTest extends PHPUnit_Framework_Tes
    */
   public function setGetRulesProviderConstructor() {
 
-    $rules     = new RulesProvider();
+    $rules     = $this->getMock( 'Behance\NBD\Validation\Interfaces\RulesProviderInterface' );
     $validator = new ValidatorService( [], $rules );
 
     $this->assertSame( $rules, $validator->getRulesProvider() );

@@ -14,8 +14,6 @@ use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 use Behance\NBD\Validation\Exceptions\Validator\FailureException;
 use Behance\NBD\Validation\Exceptions\Validator\NotRunException;
-use Behance\NBD\Validation\Exceptions\Validator\DuplicateRunException;
-use Behance\NBD\Validation\Exceptions\Validator\CallbackResultException;
 
 class ValidatorService implements ValidatorServiceInterface {
 
@@ -36,10 +34,10 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
-   * @param array           $cage_data       what key => value pairs will be checked
-   * @param RulesInterface  $rules_provider  which checks are available
+   * @param array                   $cage_data       what key => value pairs will be checked
+   * @param RulesProviderInterface  $rules_provider  which checks are available
    */
-  public function __construct( $cage_data = [], RulesProvider $rules_provider = null ) {
+  public function __construct( $cage_data = [], RulesProviderInterface $rules_provider = null ) {
 
     // When $cage_data is not an array, there will be no data to be validated (at all)
     if ( is_array( $cage_data ) ) {
@@ -57,6 +55,8 @@ class ValidatorService implements ValidatorServiceInterface {
    * Key-value pair of data to validate
    *
    * @param array $data
+   *
+   * @return array
    */
   public function setCageData( array $data ) {
 
