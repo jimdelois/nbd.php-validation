@@ -45,4 +45,12 @@ interface RulesProviderInterface {
   public function setCallbackRule( $name, \Closure $closure );
 
 
+  /**
+   * Will add $namespace to list of currently defined namespaces.
+   * Implementations should arrange the list as LIFO (last in first out)
+   *
+   * @param string $namespace  the bucket used to organize rules
+   */
+  public function addRuleNamespace( $namespace );
+
 } // RulesProviderInterface
