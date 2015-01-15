@@ -21,4 +21,14 @@ interface RuleInterface {
   public function getErrorTemplate();
 
 
+  /**
+   * Allows rule to format additional replacements
+   * Children can override this method, inserting fields into $context to be used for template replacement
+   *
+   * @param array $context
+   *
+   * @return array
+   */
+  public function convertFormattingContext( array $context  );
+
 } // RuleInterface

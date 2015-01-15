@@ -46,12 +46,7 @@ abstract class RuleAbstract implements RuleInterface {
 
 
   /**
-   * Allows rule to format additional replacements
-   * Children can override this method, inserting fields into $context to be used for template replacement
-   *
-   * @param array $parameters
-   *
-   * @return array
+   * {@inheritDoc}
    */
   public function convertFormattingContext( array $context ) {
 
