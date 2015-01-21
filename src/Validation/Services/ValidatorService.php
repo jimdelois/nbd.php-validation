@@ -578,6 +578,21 @@ class ValidatorService implements ValidatorServiceInterface {
 
 
   /**
+   * Convenience function to allow for the checking of valid properties
+   *
+   * @param string $property  The field to check, as a property
+   *
+   * @return bool
+   */
+  public function __isset( $property ) {
+
+    //  We validate the logic and then check if it's actually set in the event that it's not truthy.
+    return $this->getValidatedField( $property ) || isset( $this->_valid_data[ $property ] );
+
+  } // __isset
+
+
+  /**
    * @throws BadMethodCallException  method is not supported
    */
   public function __set( $key, $value ) {
