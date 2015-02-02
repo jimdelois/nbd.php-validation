@@ -45,20 +45,20 @@ $valid = $validator->run();
 if ( !$valid ) {
 
   // Loop through the failing fields
-  $errors = $validator->getErrorMessageArray();
+  $errors = $validator->getAllFieldErrorMessages();
 
   foreach ( $errors as $field => $message ) {
     // ...
   }
 
   // Retrieves an error message string for all failed fields
-  $error_message = $validator->getErrors();
+  $error_message = $validator->getAllFieldErrorMessagesString();
 
   // Just retrieve the error message for email field
-  $email_message = $validator->getErrors( 'email' );
+  $email_message = $validator->getFieldErrorMessage( 'email' );
 
   // Just retrieve the field keys that failed
-  $error_keys    = $validator->getErrorKeys();
+  $error_keys    = $validator->getFailedFields();
 
 } // if !valid
 
