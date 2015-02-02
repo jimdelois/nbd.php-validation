@@ -34,7 +34,7 @@ $validator = new ValidatorService();
 $validator->setRule( 'email',      'E-Mail',          'required|email' )
           ->setRule( 'first_name', 'First Name',      'required|alpha' )
           ->setRule( 'last_name',  'Last Name',       'required|alpha' )
-          ->setRule( 'middle',      'Middle Initial', 'alpha|maxLength[1]' );
+          ->setRule( 'middle_i',   'Middle Initial',  'alpha|maxLength[1]' );
 
 // Insert data to be validated
 $validator->setCageData( $_POST );
@@ -70,7 +70,7 @@ else {
   $last_name  = $validator->last_name;
 
   // You can check if a magic property exists using isset() whether or not it has passed validation.
-  $has_middle = isset( $validator->middle );
+  $has_middle = isset( $validator->middle_i );
 
   // Or, retrieve valid fields as a key-value array
   $fields = $validator->getValidData(); // ex. [ 'email' => xxx, ... ],  will discard unvalidated/failed fields
