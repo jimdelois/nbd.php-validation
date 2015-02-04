@@ -81,4 +81,18 @@ abstract class RuleAbstract implements RuleInterface {
 
   } // _extractContextParameters
 
+  const KEY_CONTEXT_VALIDATOR = 'validator';
+
+  protected function _extractContextValidator( array $context ) {
+
+    $key = static::KEY_CONTEXT_VALIDATOR;
+
+    if ( empty( $context[ $key ] ) ) {
+      throw new RuleRequirementException( "Context Validator required for '" . get_class( $this ) . "'" );
+    }
+
+    return $context[ $key ];
+
+  } // _extractContextValidator
+
 } // RuleAbstract

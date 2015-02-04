@@ -2,6 +2,7 @@
 
 namespace Behance\NBD\Validation\Providers;
 
+use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 use Behance\NBD\Validation\Interfaces\RulesProviderInterface;
 use Behance\NBD\Validation\Interfaces\RuleInterface;
 
@@ -16,6 +17,7 @@ use Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException;
 class RulesProvider implements RulesProviderInterface {
 
   const RULE_NAME_SUFFIX = 'Rule';
+  const RULE_COMPOUND    = '\Behance\NBD\Validation\Interfaces\CompoundRuleInterface';
 
   /**
    * @var array  different namespaces to use for locating rules
@@ -135,7 +137,7 @@ class RulesProvider implements RulesProviderInterface {
 
 
   /**
-   * @param Closure $closure
+   * @param \Closure $closure
    *
    * @return CallbackTemplateRule
    */
@@ -156,7 +158,7 @@ class RulesProvider implements RulesProviderInterface {
    *
    * @param string $name
    *
-   * @return Behance\NBD\Validation\Interfaces\RuleInterface
+   * @return \Behance\NBD\Validation\Interfaces\RuleInterface
    */
   protected function _buildStandardRule( $name ) {
 
@@ -171,7 +173,14 @@ class RulesProvider implements RulesProviderInterface {
       }
 
       // Class is located, return right away
-      return new $class_name();
+      $rule = new $class_name();
+
+      $compound_interface = self::RULE_COMPOUND;
+      if ( $rule instanceof $compound_interface ) {
+        $rule->setRulesProvider( $this );
+      }
+
+      return $rule;
 
     } // foreach namespaces
 
@@ -179,5 +188,69 @@ class RulesProvider implements RulesProviderInterface {
     throw new UnknownRuleException( "Rule '{$name}' is not a validator rule" );
 
   } // _buildStandardRule
+
+
+  /**
+   * @param mixed  $rule
+   * @param string $field  what is currently being processed
+   *
+   * @return array [ 0 => function name/Closure, 1 => optional array of parameters ]
+   */
+  public function processRuleIntoFunctionAndArguments( $rule, $field ) {
+
+    $rule_parameters = [];
+
+    if ( $rule instanceof \Closure ) {
+      $rule = $this->_convertToCallableName( $rule );
+    }
+
+    else {
+      // When a [ appears anywhere, this is an attempt to use a rule as parameterized function
+      $param_position = strpos( $rule, '[' );
+
+      if ( $param_position !== false )  {
+
+        // When there's no complimenting bracket, this is a problem
+        if ( substr( $rule, -1 ) !== ']' )  {
+          throw new RuleRequirementException( "Field '{$field}' needs rule parameters encapsulated by []" );
+        }
+
+        // Remove the brackets from the request, leaving a (hopefully) comma-separated list of parameters
+        $rule_arguments  = substr( $rule, ( $param_position + 1 ), strlen( $rule ) );
+
+        // Remove parameters from the rule name
+        $rule            = substr( $rule, 0, $param_position );
+        $rule_arguments  = substr( $rule_arguments, 0, ( strlen( $rule_arguments ) - 1 ) );
+
+        // Create an array by dividing arguments along the comma
+        $rule_parameters = explode( ',', $rule_arguments );
+
+      } // if param_position
+
+    } // else (!closure)
+
+    // Standardize rules with lowercase first character
+    return [ lcfirst( $rule ), $rule_parameters ];
+
+  } // processRuleIntoFunctionAndArguments
+
+
+  /**
+   * Provides backwards compatibility for existing callback rules
+   *
+   * @param Closure $rule
+   *
+   * @return string
+   */
+  protected function _convertToCallableName( \Closure $rule ) {
+
+    // TODO: move this assignment implementation into RulesProvider
+    $new_name = spl_object_hash( $rule );
+
+    $this->setCallbackRule( $new_name, $rule );
+
+    return $new_name;
+
+  } // _convertToCallableName
 
 } // RulesProvider

@@ -2,8 +2,6 @@
 
 namespace Behance\NBD\Validation\Abstracts;
 
-use Behance\NBD\Validation\Abstracts\RuleAbstract;
-
 use Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException;
 
 abstract class CallbackRuleAbstract extends RuleAbstract {
@@ -12,7 +10,9 @@ abstract class CallbackRuleAbstract extends RuleAbstract {
 
 
   /**
-   * @return Closure
+   * @throws \Behance\NBD\Validation\Exceptions\Validator\RuleRequirementException
+   *
+   * @return \Closure
    */
   public function getClosure() {
 
@@ -26,7 +26,7 @@ abstract class CallbackRuleAbstract extends RuleAbstract {
 
 
   /**
-   * @param Closure $closure
+   * @param \Closure $closure
    */
   public function setClosure( \Closure $closure ) {
 
