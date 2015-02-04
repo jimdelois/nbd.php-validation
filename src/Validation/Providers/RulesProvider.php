@@ -173,14 +173,7 @@ class RulesProvider implements RulesProviderInterface {
       }
 
       // Class is located, return right away
-      $rule = new $class_name();
-
-      $compound_interface = self::RULE_COMPOUND;
-      if ( $rule instanceof $compound_interface ) {
-        $rule->setRulesProvider( $this );
-      }
-
-      return $rule;
+      return new $class_name();
 
     } // foreach namespaces
 
