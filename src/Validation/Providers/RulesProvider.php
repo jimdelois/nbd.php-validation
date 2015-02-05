@@ -17,7 +17,6 @@ use Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException;
 class RulesProvider implements RulesProviderInterface {
 
   const RULE_NAME_SUFFIX = 'Rule';
-  const RULE_COMPOUND    = '\Behance\NBD\Validation\Interfaces\CompoundRuleInterface';
 
   /**
    * @var array  different namespaces to use for locating rules
@@ -184,10 +183,47 @@ class RulesProvider implements RulesProviderInterface {
 
 
   /**
-   * @param mixed  $rule
-   * @param string $field  what is currently being processed
+   * {@inheritdoc}
+   */
+  public function parseRulesDefinition( $definition ) {
+
+    $rule_characters    = str_split( $definition );
+
+    $rules              = [];
+    $rule_offset        = 0;
+    $open_bracket_count = 0;
+
+    foreach ( $rule_characters as $character ) {
+
+      if ( !isset( $rules[ $rule_offset ] ) ) {
+        $rules[ $rule_offset ] = '';
+      }
+
+      if ( $character === '|' && $open_bracket_count === 0 ) {
+        ++$rule_offset;
+        continue;
+      }
+
+      if ( $character === '[' ) {
+        ++$open_bracket_count;
+      }
+      elseif ( $character === ']' ) {
+        --$open_bracket_count;
+      }
+
+      $rules[ $rule_offset ] .= $character;
+
+    } // foreach character
+
+    return $rules;
+
+  } // parseRulesDefinition
+
+
+  /**
+   * {@inheritdoc}
    *
-   * @return array [ 0 => function name/Closure, 1 => optional array of parameters ]
+   * TODO: throw exceptions in here on parse errors
    */
   public function processRuleIntoFunctionAndArguments( $rule, $field ) {
 
@@ -231,7 +267,7 @@ class RulesProvider implements RulesProviderInterface {
   /**
    * Provides backwards compatibility for existing callback rules
    *
-   * @param Closure $rule
+   * @param \Closure $rule
    *
    * @return string
    */

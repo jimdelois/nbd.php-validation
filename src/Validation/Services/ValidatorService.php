@@ -102,7 +102,7 @@ class ValidatorService implements ValidatorServiceInterface {
 
     $rules = ( is_array( $rules ) )
              ? $rules
-             : explode( '|', $rules );
+             : $this->getRulesProvider()->parseRulesDefinition( $rules );
 
     // IMPORTANT: simply having 'required' is not sufficient for a validator ruleset
     if ( count( $rules ) === 1 && $rules[0] === self::RULE_REQUIRED ) {
@@ -294,7 +294,7 @@ class ValidatorService implements ValidatorServiceInterface {
       // Each rule for the specified field
       foreach ( $rules as $rule ) {
 
-        list( $rule_name, $rule_parameters ) = $this->_processRuleIntoFunctionAndArguments( $rule, $field );
+        list( $rule_name, $rule_parameters ) = $rules_provider->processRuleIntoFunctionAndArguments( $rule, $field );
 
         $rule_component = $rules_provider->getRule( $rule_name );
 
@@ -644,70 +644,6 @@ class ValidatorService implements ValidatorServiceInterface {
     return !empty( $this->_errors );
 
   } // _hasErrors
-
-
-  /**
-   * @param mixed  $rule
-   * @param string $field  what is currently being processed
-   *
-   * @return array [ 0 => function name/Closure, 1 => optional array of parameters ]
-   */
-  protected function _processRuleIntoFunctionAndArguments( $rule, $field ) {
-
-    $rule_parameters = [];
-
-    if ( $rule instanceof \Closure ) {
-      $rule = $this->_convertToCallableName( $rule );
-    }
-
-    else {
-      // When a [ appears anywhere, this is an attempt to use a rule as parameterized function
-      $param_position = strpos( $rule, '[' );
-
-      if ( $param_position !== false )  {
-
-        // When there's no complimenting bracket, this is a problem
-        if ( substr( $rule, -1 ) !== ']' )  {
-          throw new RuleRequirementException( "Field '{$field}' needs rule parameters encapsulated by []" );
-        }
-
-        // Remove the brackets from the request, leaving a (hopefully) comma-separated list of parameters
-        $rule_arguments  = substr( $rule, ( $param_position + 1 ), strlen( $rule ) );
-
-        // Remove parameters from the rule name
-        $rule            = substr( $rule, 0, $param_position );
-        $rule_arguments  = substr( $rule_arguments, 0, ( strlen( $rule_arguments ) - 1 ) );
-
-        // Create an array by dividing arguments along the comma
-        $rule_parameters = explode( ',', $rule_arguments );
-
-      } // if param_position
-
-    } // else (!closure)
-
-    // Standardize rules with lowercase first character
-    return [ lcfirst( $rule ), $rule_parameters ];
-
-  } // _processRuleIntoFunctionAndArguments
-
-
-  /**
-   * Provides backwards compatibility for existing callback rules
-   *
-   * @param Closure $rule
-   *
-   * @return string
-   */
-  protected function _convertToCallableName( \Closure $rule ) {
-
-    // TODO: move this assignment implementation into RulesProvider
-    $new_name = spl_object_hash( $rule );
-
-    $this->getRulesProvider()->setCallbackRule( $new_name, $rule );
-
-    return $new_name;
-
-  } // _convertToCallableName
 
 
   /**

@@ -2,13 +2,13 @@
 
 namespace Behance\NBD\Validation\Rules;
 
-use Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
-use Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException;
-use Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
+use \Behance\NBD\Validation\Abstracts\CallbackRuleAbstract;
+use \Behance\NBD\Validation\Exceptions\Rules\UnknownRuleException;
+use \Behance\NBD\Validation\Exceptions\Validator\InvalidRuleException;
 
 /**
- * Not to be confused with the callback mechanism the rules are extending, this validator
- * will statically call a parameterized class, method name as the validation
+ * This rule will ensure that the incoming data is an array, then recursively
+ * parse all "inner" rules and apply them to each element within the array
  */
 class ArrayOfRule extends CallbackRuleAbstract {
 
@@ -16,32 +16,53 @@ class ArrayOfRule extends CallbackRuleAbstract {
 
   public function __construct() {
 
-    $closure = ( function( $parameters, array $context ) {
+    $closure = ( function( $data, array $context ) {
 
-      if ( !is_array( $parameters ) ) {
+      if ( !is_array( $data ) ) {
         return false;
       }
 
-      list( $inner_rule ) = $this->_extractContextParameters( $context );
-      $validator          = $this->_extractContextValidator( $context );
-      $provider           = $validator->getRulesProvider();
+      list( $inner_definition ) = $this->_extractContextParameters( $context );
 
-      try {
+      $field                    = $this->_extractContextField( $context );
+      $validator                = $this->_extractContextValidator( $context );
+      $provider                 = $validator->getRulesProvider();
 
-        $rule = $provider->getRule( $inner_rule );
+      $rule_cache               = []; // Local cache map
+      $inner_definitions        = $provider->parseRulesDefinition( $inner_definition );
 
-      }
-      catch( UnknownRuleException $e ) {
+      foreach ( $data as $datum ) {
 
-        throw new InvalidRuleException( 'Context parameter must be a defined rule' );
+        foreach ( $inner_definitions as $definition ) {
 
-      }
+          list( $inner_rule_name, $inner_rule_parameters ) = $provider->processRuleIntoFunctionAndArguments( $definition, $field );
 
-      foreach ( $parameters as $parameter ) {
+          // Update the context for the next inner rule to use while validating
+          $sub_context               = $context;
+          $sub_context['rule_name']  = $inner_rule_name;
+          $sub_context['parameters'] = $inner_rule_parameters;
 
-        if ( !$rule->isValid( $parameter, $context ) ) {
-          return false;
-        }
+          // Local cache to avoid reloading common rules
+          if ( !isset( $rule_cache[ $inner_rule_name ] ) ) {
+
+            try {
+              $rule_cache[ $inner_rule_name ] = $provider->getRule( $inner_rule_name );
+            }
+            catch( UnknownRuleException $e ) {
+              throw new InvalidRuleException( 'Context parameter must be a defined rule' );
+            }
+
+          } // if rule isn't loaded
+
+          $rule = $rule_cache[ $inner_rule_name ];
+
+          if ( !$rule->isValid( $datum, $sub_context ) ) {
+
+            return false;
+
+          }
+
+        } // foreach rule
 
       } // foreach incoming parameter
 
@@ -52,5 +73,6 @@ class ArrayOfRule extends CallbackRuleAbstract {
     $this->setClosure( $closure );
 
   } // __construct
+
 
 } // ArrayOfRule

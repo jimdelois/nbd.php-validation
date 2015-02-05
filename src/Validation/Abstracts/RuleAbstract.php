@@ -9,6 +9,8 @@ abstract class RuleAbstract implements RuleInterface {
 
   // Names the key within context array where rule parameters are passed
   const KEY_CONTEXT_PARAMETERS = 'parameters';
+  const KEY_CONTEXT_VALIDATOR  = 'validator';
+  const KEY_CONTEXT_FIELD      = 'field';
 
   // When defined, mandates how many parameters must be present to return from context parameters
   const REQUIRED_PARAM_COUNT   = false;
@@ -81,18 +83,46 @@ abstract class RuleAbstract implements RuleInterface {
 
   } // _extractContextParameters
 
-  const KEY_CONTEXT_VALIDATOR = 'validator';
 
+  /**
+   * Extracts a Validator from a given array context
+   *
+   * @param array $context
+   *
+   * @return \Behance\NBD\Validation\Services\ValidatorService
+   * @throws RuleRequirementException
+   */
   protected function _extractContextValidator( array $context ) {
 
     $key = static::KEY_CONTEXT_VALIDATOR;
 
     if ( empty( $context[ $key ] ) ) {
-      throw new RuleRequirementException( "Context Validator required for '" . get_class( $this ) . "'" );
+      throw new RuleRequirementException( "Validator required for '" . get_class( $this ) . "'" );
     }
 
     return $context[ $key ];
 
   } // _extractContextValidator
+
+
+  /**
+   * Extracts a field name from a given array context
+   *
+   * @param array $context
+   *
+   * @return string
+   * @throws RuleRequirementException
+   */
+  protected function _extractContextField( array $context ) {
+
+    $key = static::KEY_CONTEXT_FIELD;
+
+    if ( empty( $context[ $key ] ) ) {
+      throw new RuleRequirementException( "Field required for '" . get_class( $this ) . "'" );
+    }
+
+    return $context[ $key ];
+
+  } // _extractContextField
 
 } // RuleAbstract

@@ -130,4 +130,51 @@ class NBD_Validation_Providers_RulesProviderTest extends PHPUnit_Framework_TestC
 
   } // normalizeRuleNamespace
 
+
+  /**
+   * @test
+   * @dataProvider parseRuleProvider
+   */
+  public function parseRule( $rules_string, $rules_expected ) {
+
+    $validator = new \Behance\NBD\Validation\Services\ValidatorService();
+    $provider  = $validator->getRulesProvider();
+
+    $rules_actual = $provider->parseRulesDefinition( $rules_string );
+
+    $this->assertEquals( $rules_expected, $rules_actual );
+
+  } // parseRule
+
+
+  /**
+   * @return array
+   */
+  public function parseRuleProvider() {
+
+    $rule_map       = [];
+
+    $rules_as_array = [
+        [ 'alpha' ],
+        [ 'required', 'integer' ],
+        [ 'required', 'arrayOf[alpha|maxLength[3]]' ],
+        [ 'arrayOf[arrayOf[required|alpha|minLengh[1]]]' ],
+        [ 'required', 'arrayOf[alpha|maxLength[3]]', 'maxLength[5]', 'arrayOf[arrayOf[required|alpha|minLengh[1]]]' ]
+    ];
+
+    foreach ( $rules_as_array as $rule_as_array ) {
+
+      $rule_map[] = [
+          'rules_string'   => join( '|', $rule_as_array ),
+          'rules_expected' => $rule_as_array
+      ];
+
+    } // foreach rule
+
+    return $rule_map;
+
+  } // parseRuleProvider
+
+  // TODO: Test for invalid rule formats and the provider ought through an exception.
+
 } // NBD_Validation_Providers_RulesProviderTest
